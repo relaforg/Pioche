@@ -1,143 +1,160 @@
 @import "tailwindcss";
 @source "../src/**/*.rs";
 
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap");
+
 @theme {
-  --font-display: "Fredoka", system-ui, sans-serif;
-  --font-sans: "Nunito", system-ui, sans-serif;
+	--default-border-width: 2px;
 
-  --color-bg: #e9e5dc;        /* gris chaud : fond de page */
-  --color-surface: #f7f4ee;   /* cartes */
-  --color-fg: #182430;        /* bleu-nuit : texte + traits */
-  --color-fg-soft: #2c3a46;
-  --color-ink: #182430;       /* l'encre du trait, toujours 2px */
-  --color-line: #182430;
+	--font-display: "Fredoka", system-ui, sans-serif;
+	--font-sans: "Nunito", system-ui, sans-serif;
 
-  /* bleu profond — encre secondaire, liens, Secret Santa */
-  --color-blue-100: #e3eef5;
-  --color-blue-200: #bcd8e7;
-  --color-blue-300: #8ebdd4;
-  --color-blue-400: #4f93b9;
-  --color-blue-500: #1f6f9b;
-  --color-blue-600: #195a7e;
-  --color-blue-700: #144660;
-  --color-blue-800: #0f3244;
-  --color-blue-900: #0a2230;
+	/* graisses réellement chargées */
+	--font-weight-normal: 400;
+	--font-weight-medium: 500;   /* Fredoka uniquement */
+	--font-weight-semibold: 600;
+	--font-weight-bold: 700;     /* max pour Fredoka */
+	--font-weight-extrabold: 800; /* Nunito uniquement */
 
-  /* jaune beurre — accents, badges, trames */
-  --color-butter-100: #fdf4dd;
-  --color-butter-200: #fae7b4;
-  --color-butter-300: #f6d888;
-  --color-butter-400: #f3cd66;
-  --color-butter-500: #f0c24b;
-  --color-butter-600: #d0a334;
-  --color-butter-700: #a47f26;
-  --color-butter-800: #755a19;
-  --color-butter-900: #493810;
+	--color-bg: #e9e5dc;        /* gris chaud : fond de page */
+	--color-surface: #f7f4ee;   /* cartes */
+	--color-fg: #182430;        /* bleu-nuit : texte + traits */
+	--color-fg-soft: #2c3a46;
+	--color-ink: #182430;       /* l'encre du trait, toujours 2px */
+	--color-line: #182430;
 
-  /* framboise — CTA principale */
-  --color-raspberry-100: #fae7ec;
-  --color-raspberry-200: #f2c3cf;
-  --color-raspberry-300: #e69aad;
-  --color-raspberry-400: #d8728c;
-  --color-raspberry-500: #c94f6d;
-  --color-raspberry-600: #a83e59;
-  --color-raspberry-700: #842f45;
-  --color-raspberry-800: #5e2131;
-  --color-raspberry-900: #3b141e;
+	/* bleu profond — encre secondaire, liens, Secret Santa */
+	--color-blue-100: #e3eef5;
+	--color-blue-200: #bcd8e7;
+	--color-blue-300: #8ebdd4;
+	--color-blue-400: #4f93b9;
+	--color-blue-500: #1f6f9b;
+	--color-blue-600: #195a7e;
+	--color-blue-700: #144660;
+	--color-blue-800: #0f3244;
+	--color-blue-900: #0a2230;
 
-  --color-neutral-100: #f7f4ee;
-  --color-neutral-200: #e9e5dc;
-  --color-neutral-300: #d6d1c5;
-  --color-neutral-400: #b3ada0;
-  --color-neutral-500: #8b867b;
-  --color-neutral-600: #66625a;
-  --color-neutral-700: #47443e;
-  --color-neutral-800: #2c3a46;
-  --color-neutral-900: #182430;
+	/* jaune beurre — accents, badges, trames */
+	--color-butter-100: #fdf4dd;
+	--color-butter-200: #fae7b4;
+	--color-butter-300: #f6d888;
+	--color-butter-400: #f3cd66;
+	--color-butter-500: #f0c24b;
+	--color-butter-600: #d0a334;
+	--color-butter-700: #a47f26;
+	--color-butter-800: #755a19;
+	--color-butter-900: #493810;
 
-  --radius-chip: 12px;
-  --radius-logo: 14px;
-  --radius-blob: 26px;
-  --radius-card: 32px;
-  --radius-pill: 999px;
+	/* framboise — CTA principale */
+	--color-raspberry-100: #fae7ec;
+	--color-raspberry-200: #f2c3cf;
+	--color-raspberry-300: #e69aad;
+	--color-raspberry-400: #d8728c;
+	--color-raspberry-500: #c94f6d;
+	--color-raspberry-600: #a83e59;
+	--color-raspberry-700: #842f45;
+	--color-raspberry-800: #5e2131;
+	--color-raspberry-900: #3b141e;
 
-  /* ombres 2e encre : offset plein, jamais de flou */
-  --shadow-ink-2: 2px 2px 0 var(--color-ink);
-  --shadow-ink-3: 3px 3px 0 var(--color-ink);
-  --shadow-ink-4: 4px 4px 0 var(--color-ink);
-  --shadow-ink-5: 5px 5px 0 var(--color-ink);
-  --shadow-ink-6: 6px 6px 0 var(--color-ink);
-  --shadow-ink-9: 9px 9px 0 var(--color-ink);
-  --shadow-blue-5: 5px 5px 0 var(--color-blue-500);
-  --shadow-blue-9: 9px 9px 0 var(--color-blue-500);        /* cartes principales */
-  --shadow-butter-9: 9px 9px 0 var(--color-butter-500);    /* Secret Santa */
-  --shadow-raspberry-9: 9px 9px 0 var(--color-raspberry-500); /* CTA */
+	--color-neutral-100: #f7f4ee;
+	--color-neutral-200: #e9e5dc;
+	--color-neutral-300: #d6d1c5;
+	--color-neutral-400: #b3ada0;
+	--color-neutral-500: #8b867b;
+	--color-neutral-600: #66625a;
+	--color-neutral-700: #47443e;
+	--color-neutral-800: #2c3a46;
+	--color-neutral-900: #182430;
 
-  --animate-bob: bob 3s ease-in-out infinite;
+	--radius-chip: 12px;
+	--radius-logo: 14px;
+	--radius-blob: 26px;
+	--radius-card: 32px;
+	--radius-pill: 999px;
 
-  --container-shell: 1160px;
+	/* ombres 2e encre : offset plein, jamais de flou */
+	--shadow-ink-2: 2px 2px 0 var(--color-ink);
+	--shadow-ink-3: 3px 3px 0 var(--color-ink);
+	--shadow-ink-4: 4px 4px 0 var(--color-ink);
+	--shadow-ink-5: 5px 5px 0 var(--color-ink);
+	--shadow-ink-6: 6px 6px 0 var(--color-ink);
+	--shadow-ink-9: 9px 9px 0 var(--color-ink);
+	--shadow-blue-3: 3px 3px 0 var(--color-blue-500);
+	--shadow-blue-5: 5px 5px 0 var(--color-blue-500);
+	--shadow-blue-9: 9px 9px 0 var(--color-blue-500);        /* cartes principales */
+	--shadow-butter-3: 3px 3px 0 var(--color-butter-500);    /* Secret Santa */
+	--shadow-butter-9: 9px 9px 0 var(--color-butter-500);    /* Secret Santa */
+	--shadow-raspberry-3: 3px 3px 0 var(--color-raspberry-500); /* CTA */
+	--shadow-raspberry-9: 9px 9px 0 var(--color-raspberry-500); /* CTA */
+
+	--animate-bob: bob 3s ease-in-out infinite;
+
+	--container-shell: 1160px;
 }
 
 @keyframes bob {
-  0%, 100% { transform: rotate(-5deg) translateY(0); }
-  50%      { transform: rotate(-5deg) translateY(-8px); }
+0%, 100% { transform: rotate(-5deg) translateY(0); }
+50%      { transform: rotate(-5deg) translateY(-8px); }
 }
 
 /* ── thème nuit ────────────────────────────────────────────── */
 :root.dark,
 [data-theme="dark"] {
-  --color-bg: #182430;
-  --color-surface: #22303d;
-  --color-fg: #e9e5dc;
-  --color-fg-soft: #b8b3a8;
-  --color-ink: #0c1218;
-  --color-line: #0c1218;
+	--color-bg: #182430;
+	--color-surface: #22303d;
+	--color-fg: #e9e5dc;
+	--color-fg-soft: #b8b3a8;
+	--color-ink: #0c1218;
+	--color-line: #0c1218;
 
-  --color-blue-500: #62aed6;
-  --color-butter-500: #f3cd66;
-  --color-raspberry-500: #e0778f;
+	--color-blue-500: #62aed6;
+	--color-butter-500: #f3cd66;
+	--color-raspberry-500: #e0778f;
 
-  --color-neutral-100: #22303d;
-  --color-neutral-200: #2c3a46;
-  --color-neutral-300: #47443e;
-  --color-neutral-400: #66625a;
-  --color-neutral-500: #8b867b;
-  --color-neutral-600: #b3ada0;
-  --color-neutral-700: #d6d1c5;
-  --color-neutral-800: #e9e5dc;
-  --color-neutral-900: #f7f4ee;
+	--color-neutral-100: #22303d;
+	--color-neutral-200: #2c3a46;
+	--color-neutral-300: #47443e;
+	--color-neutral-400: #66625a;
+	--color-neutral-500: #8b867b;
+	--color-neutral-600: #b3ada0;
+	--color-neutral-700: #d6d1c5;
+	--color-neutral-800: #e9e5dc;
+	--color-neutral-900: #f7f4ee;
 }
 
 /* ── trames + double encre ─────────────────────────────────── */
 @utility dots {
-  background-image: radial-gradient(color-mix(in srgb, var(--color-ink) 8%, transparent) 1.5px, transparent 1.6px);
-  background-size: 22px 22px;
+	background-image: radial-gradient(color-mix(in srgb, var(--color-ink) 8%, transparent) 1.5px, transparent 1.6px);
+	background-size: 22px 22px;
 }
 @utility dots-sm {
-  background-image: radial-gradient(color-mix(in srgb, var(--color-ink) 8%, transparent) 1.5px, transparent 1.6px);
-  background-size: 10px 10px;
+	background-image: radial-gradient(color-mix(in srgb, var(--color-ink) 8%, transparent) 1.5px, transparent 1.6px);
+	background-size: 10px 10px;
 }
 @utility dots-butter {
-  background-image: radial-gradient(var(--color-butter-500) 3.4px, transparent 3.6px);
-  background-size: 13px 13px;
+	background-image: radial-gradient(var(--color-butter-500) 3.4px, transparent 3.6px);
+	background-size: 13px 13px;
 }
 @utility text-shadow-blue-3 { text-shadow: 3px 3px 0 var(--color-blue-500); }
 @utility text-shadow-blue-7 { text-shadow: 7px 7px 0 var(--color-blue-500); }
 @utility text-shadow-butter-4 { text-shadow: 4px 4px 0 var(--color-butter-500); }
 
 @layer base {
-  body {
-    background: var(--color-bg);
-    color: var(--color-fg);
-    font-family: var(--font-sans);
-    background-image: radial-gradient(color-mix(in srgb, var(--color-ink) 8%, transparent) 1.5px, transparent 1.6px);
-    background-size: 22px 22px;
-  }
-  h1, h2, h3, button { font-family: var(--font-display); }
-  h1 { letter-spacing: -2.5px; line-height: 0.92; }
-  h2 { letter-spacing: -1px; }
-  a { color: var(--color-blue-500); text-decoration: none; }
-  a:hover { color: var(--color-raspberry-500); }
-  ::selection { background: var(--color-butter-500); color: var(--color-ink); }
-  :focus-visible { outline: 2px solid var(--color-blue-500); outline-offset: 3px; }
+	body {
+		background: var(--color-bg);
+		color: var(--color-fg);
+		font-family: var(--font-sans);
+		background-image: radial-gradient(color-mix(in srgb, var(--color-ink) 8%, transparent) 1.5px, transparent 1.6px);
+		background-size: 22px 22px;
+	}
+	h1, h2, h3, h4, button { font-family: var(--font-display); font-weight: 600; }
+	h1 { font-weight: 700; letter-spacing: -2.5px; line-height: 0.92; }
+	h2 { font-weight: 700; letter-spacing: -1px; }
+	strong, b { font-weight: 800; } /* Nunito */
+	/* pas de faux gras si une graisse manque */
+	* { font-synthesis-weight: none; }
+	/* a { color: var(--color-blue-500); text-decoration: none; } */
+	/* a:hover { color: var(--color-raspberry-500); } */
+	::selection { background: var(--color-butter-500); color: var(--color-ink); }
+	:focus-visible { outline: 2px solid var(--color-blue-500); outline-offset: 3px; }
 }

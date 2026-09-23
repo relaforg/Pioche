@@ -12,8 +12,8 @@ pub fn Header() -> impl IntoView {
                 <h2 class="text-3xl text-shadow-blue-3">"Pioche !"</h2>
             </A>
             <div class="flex gap-3 items-center">
-                <ButtonLink link="/" label="Comment ça marche ?" btn_color=Color::Butter shadow_color=Color::Butter/>
-                // <ButtonLink link="/" label="Se connecter" />
+                <ButtonLink link="/" label="Comment ça marche ?" btn_color=Color::Bg shadow_color=Color::Butter/>
+                <ButtonLink link="/" label="Se connecter" btn_color=Color::Raspberry shadow_color=Color::Ink/>
             </div>
         </div>
     }

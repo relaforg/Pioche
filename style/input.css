@@ -83,8 +83,10 @@
 	--shadow-blue-5: 5px 5px 0 var(--color-blue-500);
 	--shadow-blue-9: 9px 9px 0 var(--color-blue-500);        /* cartes principales */
 	--shadow-butter-3: 3px 3px 0 var(--color-butter-500);    /* Secret Santa */
+	--shadow-butter-5: 5px 5px 0 var(--color-butter-500);
 	--shadow-butter-9: 9px 9px 0 var(--color-butter-500);    /* Secret Santa */
 	--shadow-raspberry-3: 3px 3px 0 var(--color-raspberry-500); /* CTA */
+	--shadow-raspberry-5: 5px 5px 0 var(--color-raspberry-500);
 	--shadow-raspberry-9: 9px 9px 0 var(--color-raspberry-500); /* CTA */
 
 	--animate-bob: bob 3s ease-in-out infinite;
@@ -138,6 +140,20 @@
 @utility text-shadow-blue-3 { text-shadow: 3px 3px 0 var(--color-blue-500); }
 @utility text-shadow-blue-7 { text-shadow: 7px 7px 0 var(--color-blue-500); }
 @utility text-shadow-butter-4 { text-shadow: 4px 4px 0 var(--color-butter-500); }
+
+@utility btn-press-* {
+	--press: --value(--color-*);
+	box-shadow: 5px 5px 0 var(--press);
+	/* transition: box-shadow .12s ease-out, transform .12s ease-out; */
+	&:hover {
+		box-shadow: 3px 3px 0 var(--press);
+		transform: translate(2px, 2px);
+	}
+	&:focus {
+		box-shadow: none;
+		transform: translate(5px, 5px);
+	}
+}
 
 @layer base {
 	body {

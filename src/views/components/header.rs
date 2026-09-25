@@ -6,14 +6,19 @@ use crate::{server::colors::Color, views::components::button_link::ButtonLink};
 #[component]
 pub fn Header() -> impl IntoView {
     view! {
-        <div class="flex justify-between my-5">
+        <div class="flex justify-between mt-5 mb-15">
             <A href="/" attr:class="flex gap-3 items-center">
                 <Logo />
                 <h2 class="text-3xl text-shadow-blue-3">"Pioche !"</h2>
             </A>
             <div class="flex gap-3 items-center">
-                <ButtonLink link="/" label="Comment ça marche ?" btn_color=Color::Bg shadow_color=Color::Butter/>
-                <ButtonLink link="/" label="Se connecter" btn_color=Color::Raspberry shadow_color=Color::Ink/>
+                // <ButtonLink link="/" label="Comment ça marche ?" bg_color=Color::Bg shadow_color=Color::Butter/>
+                <ButtonLink
+                    link="/"
+                    label="Se connecter"
+                    bg_color=Color::Bg
+                    shadow_color=Color::Blue
+                />
             </div>
         </div>
     }

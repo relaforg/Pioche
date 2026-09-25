@@ -7,6 +7,7 @@ pub enum Color {
     Surface,
     Fg,
     Line,
+    Transparent,
 }
 
 impl Default for Color {
@@ -21,7 +22,7 @@ impl Color {
             Self::Ink => "shadow-ink-3",
             Self::Blue => "shadow-blue-3",
             Self::Butter => "shadow-butter-3",
-            Self::Raspberry => "shadow-rapsberry-3",
+            Self::Raspberry => "shadow-raspberry-3",
             _ => "",
         }
     }
@@ -31,7 +32,7 @@ impl Color {
             Self::Ink => "shadow-ink-5",
             Self::Blue => "shadow-blue-5",
             Self::Butter => "shadow-butter-5",
-            Self::Raspberry => "shadow-rapsberry-5",
+            Self::Raspberry => "shadow-raspberry-5",
             _ => "",
         }
     }
@@ -46,6 +47,7 @@ impl Color {
             Self::Surface => "bg-surface",
             Self::Fg => "bg-fg",
             Self::Line => "bg-line",
+            Self::Transparent => "bg-transparent",
         }
     }
 
@@ -59,6 +61,7 @@ impl Color {
             Self::Surface => "btn-press-surface",
             Self::Fg => "btn-press-fg",
             Self::Line => "btn-press-line",
+            Self::Transparent => "btn-press-transparent",
         }
     }
 }

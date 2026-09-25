@@ -7,14 +7,18 @@ use crate::server::colors::Color;
 pub fn ButtonLink(
     link: &'static str,
     label: &'static str,
-    #[prop(optional)] btn_color: Color,
+    #[prop(optional)] bg_color: Color,
     #[prop(optional)] shadow_color: Color,
+    #[prop(optional)] class: &'static str,
 ) -> impl IntoView {
     view! {
-        <A href=link
-        ><button
-        class=format!("border border-line rounded-full py-2 px-4 {} {}", btn_color.bg(), shadow_color.btn_press())
-        >{label}</button>
+        <A href=link>
+            <button class=format!(
+                "cursor-pointer border border-line rounded-full py-2 px-4 {} {} {}",
+                class,
+                bg_color.bg(),
+                shadow_color.btn_press(),
+            )>{label}</button>
         </A>
     }
 }

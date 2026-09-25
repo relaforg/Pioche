@@ -1,7 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap");
 @import "tailwindcss";
 @source "../src/**/*.rs";
-
-@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap");
 
 @theme {
 	--default-border-width: 2px;
@@ -89,6 +88,22 @@
 	--shadow-raspberry-5: 5px 5px 0 var(--color-raspberry-500);
 	--shadow-raspberry-9: 9px 9px 0 var(--color-raspberry-500); /* CTA */
 
+	/* ombres de texte : même logique, génère text-shadow-<couleur>-<n> */
+	--text-shadow-ink-3: 3px 3px 0 var(--color-ink);
+	--text-shadow-ink-5: 5px 5px 0 var(--color-ink);
+	--text-shadow-ink-9: 9px 9px 0 var(--color-ink);
+	--text-shadow-blue-3: 3px 3px 0 var(--color-blue-500);
+	--text-shadow-blue-5: 5px 5px 0 var(--color-blue-500);
+	--text-shadow-blue-7: 7px 7px 0 var(--color-blue-500);
+	--text-shadow-blue-9: 9px 9px 0 var(--color-blue-500);
+	--text-shadow-butter-3: 3px 3px 0 var(--color-butter-500);
+	--text-shadow-butter-4: 4px 4px 0 var(--color-butter-500);
+	--text-shadow-butter-5: 5px 5px 0 var(--color-butter-500);
+	--text-shadow-butter-9: 9px 9px 0 var(--color-butter-500);
+	--text-shadow-raspberry-3: 3px 3px 0 var(--color-raspberry-500);
+	--text-shadow-raspberry-5: 5px 5px 0 var(--color-raspberry-500);
+	--text-shadow-raspberry-9: 9px 9px 0 var(--color-raspberry-500);
+
 	--animate-bob: bob 3s ease-in-out infinite;
 
 	--container-shell: 1160px;
@@ -137,9 +152,6 @@
 	background-image: radial-gradient(var(--color-butter-500) 3.4px, transparent 3.6px);
 	background-size: 13px 13px;
 }
-@utility text-shadow-blue-3 { text-shadow: 3px 3px 0 var(--color-blue-500); }
-@utility text-shadow-blue-7 { text-shadow: 7px 7px 0 var(--color-blue-500); }
-@utility text-shadow-butter-4 { text-shadow: 4px 4px 0 var(--color-butter-500); }
 
 @utility btn-press-* {
 	--press: --value(--color-*);

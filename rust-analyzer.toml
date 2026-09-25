@@ -1,0 +1,5 @@
+[rustfmt]
+overrideCommand = ["leptosfmt", "--stdin", "--rustfmt"]
+
+[attr_values]
+class = "Tailwind" # "Tailwind" is the only attribute value formatter available for now

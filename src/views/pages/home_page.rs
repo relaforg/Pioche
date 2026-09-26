@@ -2,12 +2,43 @@ use leptos::prelude::*;
 
 use crate::{
     server::colors::Color,
-    views::components::{button_link::ButtonLink, pill::Pill},
+    views::components::{button_link::ButtonLink, card_link::CardLink, pill::Pill},
 };
 
 #[component]
 pub fn HomePage() -> impl IntoView {
-    view! { <LandingSection /> }
+    view! {
+        <LandingSection />
+        <h3 class="text-3xl font-bold mt-10 mb-5 text-shadow-butter-3">
+            "Deux tirages, zéro prise de tête"
+        </h3>
+        <div class="flex gap-5">
+            <CardLink class="flex-1" link="/" bg_color=Color::Bg shadow_color=Color::Blue>
+                <div class="flex gap-2">
+                    <div class="size-10 rounded-chip bg-butter-500 border"></div>
+                    <div class="size-10 rounded-chip bg-blue-500 border"></div>
+                    <div class="size-10 rounded-chip bg-raspberry-500 border"></div>
+                </div>
+                <h4 class="text-2xl my-3">"Former des équipes"</h4>
+                <p class="font-semibold my-3 font-sans">
+                    "Choisis le nombre d'équipes ou la taille des groupes. On répartit, on nomme, on colorie."
+                </p>
+                <p class="font-display font-semibold">"C'est parti →"</p>
+            </CardLink>
+            <CardLink class="flex-1" link="/" bg_color=Color::Bg shadow_color=Color::Raspberry>
+                <div class="flex gap-2">
+                    <div class="size-10 rounded-full bg-butter-500 border"></div>
+                    <div class="size-10 rounded-full bg-blue-500 border"></div>
+                    <div class="size-10 rounded-full bg-raspberry-500 border"></div>
+                </div>
+                <h4 class="text-2xl my-3">"Secret Santa"</h4>
+                <p class="font-semibold my-3 font-sans">
+                    "Chacun reçoit son binôme en secret. Personne ne se tire soi-même, promis juré."
+                </p>
+                <p class="font-display font-semibold">"C'est parti →"</p>
+            </CardLink>
+        </div>
+    }
 }
 
 #[component]

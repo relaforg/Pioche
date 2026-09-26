@@ -2,7 +2,7 @@ use leptos::prelude::*;
 
 use crate::{
     server::colors::Color,
-    views::components::{button_link::ButtonLink, card_link::CardLink, pill::Pill},
+    views::components::{button_link::ButtonLink, card::Card, card_link::CardLink, pill::Pill},
 };
 
 #[component]
@@ -12,7 +12,7 @@ pub fn HomePage() -> impl IntoView {
         <h3 class="text-3xl font-bold mt-10 mb-5 text-shadow-butter-3">
             "Deux tirages, zéro prise de tête"
         </h3>
-        <div class="flex gap-5">
+        <div class="flex gap-5 mb-10">
             <CardLink class="flex-1" link="/" bg_color=Color::Bg shadow_color=Color::Blue>
                 <div class="flex gap-2">
                     <div class="size-10 rounded-chip bg-butter-500 border"></div>
@@ -38,6 +38,19 @@ pub fn HomePage() -> impl IntoView {
                 <p class="font-display font-semibold">"C'est parti →"</p>
             </CardLink>
         </div>
+        <Card bg_color=Color::Butter shadow_color=Color::Ink>
+            <div class="flex justify-between items-center">
+                <h4 class="text-2xl font-semibold">
+                    "Trois minutes pour organiser, dix secondes pour participer."
+                </h4>
+                <ButtonLink
+                    link="/"
+                    label="Voir comment ça marche →"
+                    bg_color=Color::Bg
+                    shadow_color=Color::Blue
+                />
+            </div>
+        </Card>
     }
 }
 

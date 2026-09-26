@@ -3,7 +3,7 @@ use leptos::prelude::*;
 use crate::server::colors::Color;
 
 #[component]
-pub fn CardLink(
+pub fn Card(
     children: Children,
     #[prop(optional)] bg_color: Color,
     #[prop(optional)] shadow_color: Color,
@@ -14,7 +14,7 @@ pub fn CardLink(
             "border rounded-blob {} {} {}",
             class,
             bg_color.bg(),
-            shadow_color.btn_press(),
+            shadow_color.shadow5(),
         )>
             <div class="p-7">{children()}</div>
         </div>

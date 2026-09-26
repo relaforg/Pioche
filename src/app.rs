@@ -1,4 +1,7 @@
-use crate::views::{components::header::Header, pages::home_page::HomePage};
+use crate::views::{
+    components::{footer::Footer, header::Header},
+    pages::home_page::HomePage,
+};
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
@@ -44,5 +47,6 @@ pub fn App() -> impl IntoView {
                 </main>
             </Router>
         </div>
+        <Footer />
     }
 }

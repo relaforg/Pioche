@@ -12,7 +12,7 @@ pub fn HomePage() -> impl IntoView {
         <h3 class="text-3xl font-bold mt-10 mb-5 text-shadow-butter-3">
             "Deux tirages, zéro prise de tête"
         </h3>
-        <div class="flex gap-5 mb-10">
+        <div class="flex flex-col md:flex-row gap-5 mb-10">
             <CardLink class="flex-1" link="/" bg_color=Color::Bg shadow_color=Color::Blue>
                 <div class="flex gap-2">
                     <div class="size-10 rounded-chip bg-butter-500 border"></div>
@@ -39,11 +39,12 @@ pub fn HomePage() -> impl IntoView {
             </CardLink>
         </div>
         <Card bg_color=Color::Butter shadow_color=Color::Ink>
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-5">
                 <h4 class="text-2xl font-semibold">
                     "Trois minutes pour organiser, dix secondes pour participer."
                 </h4>
                 <ButtonLink
+                    class="text-nowrap"
                     link="/"
                     label="Voir comment ça marche →"
                     bg_color=Color::Bg
@@ -57,7 +58,7 @@ pub fn HomePage() -> impl IntoView {
 #[component]
 fn LandingSection() -> impl IntoView {
     view! {
-        <section class="flex justify-between">
+        <section class="flex flex-col lg:flex-row lg:justify-between">
             <div class="flex-1">
                 <Pill
                     class="my-5"
@@ -89,8 +90,8 @@ fn LandingSection() -> impl IntoView {
                     />
                 </div>
             </div>
-            <div class="flex-1 flex justify-end items-center">
-                <div class="absolute size-90 dots-butter rounded-full">
+            <div class="relative flex-1 flex justify-center my-5 lg:justify-end items-center">
+                <div class="relative size-90 dots-butter rounded-full">
                     <div class="relative top-20 -left-15 size-60 bg-raspberry-500 mix-blend-multiply rounded-blob"></div>
                     <div class="relative -top-44 -left-19 size-60 bg-butter-500 border rounded-blob animate-bob">
                         <div class="flex justify-center items-center h-full">

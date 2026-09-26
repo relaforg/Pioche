@@ -1,12 +1,12 @@
 use crate::views::{
     components::{footer::Footer, header::Header},
-    pages::home_page::HomePage,
+    pages::{home_page::HomePage, how_it_works_page::HowItWorksPage},
 };
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{Route, Router, Routes},
-    StaticSegment,
+    path,
 };
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -42,7 +42,8 @@ pub fn App() -> impl IntoView {
                 </div>
                 <main>
                     <Routes fallback=|| "Page not found.".into_view()>
-                        <Route path=StaticSegment("") view=HomePage />
+                        <Route path=path!("/") view=HomePage />
+                        <Route path=path!("/comment-ca-marche") view=HowItWorksPage />
                     </Routes>
                 </main>
             </Router>

@@ -45,7 +45,7 @@ pub fn HomePage() -> impl IntoView {
                 </h4>
                 <ButtonLink
                     class="text-nowrap"
-                    link="/"
+                    link="/comment-ca-marche"
                     label="Voir comment ça marche →"
                     bg_color=Color::Bg
                     shadow_color=Color::Blue

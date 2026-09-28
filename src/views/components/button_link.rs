@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
 
-use crate::server::colors::Color;
+use crate::views::colors::Color;
 
 #[component]
 pub fn ButtonLink(

@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
 
-use crate::{server::colors::Color, views::components::button_link::ButtonLink};
+use crate::views::{colors::Color, components::button_link::ButtonLink};
 
 #[component]
 pub fn Header() -> impl IntoView {

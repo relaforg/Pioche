@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 
-use crate::server::colors::Color;
+use crate::views::colors::Color;
 
 #[component]
 pub fn Card(

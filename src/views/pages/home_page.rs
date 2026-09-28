@@ -1,8 +1,8 @@
 use leptos::prelude::*;
 
-use crate::{
-    server::colors::Color,
-    views::components::{button_link::ButtonLink, card::Card, card_link::CardLink, pill::Pill},
+use crate::views::{
+    colors::Color,
+    components::{button_link::ButtonLink, card::Card, card_link::CardLink, pill::Pill},
 };
 
 #[component]

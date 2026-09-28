@@ -62,7 +62,7 @@ pub fn HowItWorksPage() -> impl IntoView {
                 "Deux rôles, deux parcours. L'organisateur a un compte, les participants n'ont qu'un lien."
             </p>
         </div>
-        <div class="flex gap-5 my-10">
+        <div class="flex flex-col lg:flex-row gap-5 my-10">
             <div class="flex-1 rounded-blob border overflow-hidden shadow-butter-5 bg-bg">
                 <div class="flex justify-between bg-butter-500 p-5 border-b items-center">
                     <h3 class="text-2xl">"Tu organises"</h3>
@@ -119,7 +119,7 @@ pub fn HowItWorksPage() -> impl IntoView {
             </div>
         </div>
         <h3 class="text-3xl font-semibold my-5">"Les questions qu'on nous pose"</h3>
-        <div class="grid grid-cols-4 gap-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {faq
                 .into_iter()
                 .map(|(title, desc)| {

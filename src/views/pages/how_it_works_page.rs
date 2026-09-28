@@ -36,6 +36,25 @@ pub fn HowItWorksPage() -> impl IntoView {
         ),
     ];
 
+    let faq = [
+        (
+            "Peut-on se tirer soi-même ?",
+            "Non. Le tirage exclut d'office chacun de sa propre pioche.",
+        ),
+        (
+            "L'organisateur voit-il les binômes ?",
+            "Jamais. Il voit seulement qui a rempli sa fiche.",
+        ),
+        (
+            "Et si quelqu'un perd son résultat ?",
+            "Il rouvre son lien perso, depuis n'importe quel appareil : son résultat l'y attend.",
+        ),
+        (
+            "Peut-on exclure deux personnes ?",
+            "Oui, on peut empêcher un couple ou une paire de tomber ensemble.",
+        ),
+    ];
+
     view! {
         <div class="max-w-100">
             <h2 class="text-5xl text-shadow-butter-3 mb-5">"Comment ça marche"</h2>
@@ -44,7 +63,7 @@ pub fn HowItWorksPage() -> impl IntoView {
             </p>
         </div>
         <div class="flex gap-5 my-10">
-            <div class="flex-1 rounded-blob border overflow-hidden shadow-butter-5">
+            <div class="flex-1 rounded-blob border overflow-hidden shadow-butter-5 bg-bg">
                 <div class="flex justify-between bg-butter-500 p-5 border-b items-center">
                     <h3 class="text-2xl">"Tu organises"</h3>
                     <span class="font-extrabold rounded-full border px-3 py-1 bg-bg">
@@ -71,7 +90,7 @@ pub fn HowItWorksPage() -> impl IntoView {
                         .collect_view()}
                 </ol>
             </div>
-            <div class="flex-1 rounded-blob border overflow-hidden shadow-blue-5">
+            <div class="flex-1 rounded-blob border overflow-hidden shadow-blue-5 bg-bg">
                 <div class="flex justify-between bg-blue-500 p-5 border-b items-center">
                     <h3 class="text-2xl text-bg">"Tu participes"</h3>
                     <span class="font-extrabold rounded-full border px-3 py-1 bg-bg">
@@ -98,6 +117,22 @@ pub fn HowItWorksPage() -> impl IntoView {
                         .collect_view()}
                 </ol>
             </div>
+        </div>
+        <h3 class="text-3xl font-semibold my-5">"Les questions qu'on nous pose"</h3>
+        <div class="grid grid-cols-4 gap-5">
+            {faq
+                .into_iter()
+                .map(|(title, desc)| {
+                    view! {
+                        <div class="border bg-bg rounded-blob shadow-raspberry-5 flex items-center">
+                            <div class="px-5 py-3 space-y-3">
+                                <h4 class="font-semibold text-xl">{title}</h4>
+                                <p class="font-semibold">{desc}</p>
+                            </div>
+                        </div>
+                    }
+                })
+                .collect_view()}
         </div>
     }
 }

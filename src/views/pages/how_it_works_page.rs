@@ -63,10 +63,10 @@ pub fn HowItWorksPage() -> impl IntoView {
             </p>
         </div>
         <div class="flex flex-col lg:flex-row gap-5 my-10">
-            <div class="flex-1 rounded-blob border overflow-hidden shadow-butter-5 bg-bg">
+            <div class="flex-1 rounded-blob border overflow-hidden shadow-butter-5 bg-surface">
                 <div class="flex justify-between bg-butter-500 p-5 border-b items-center">
                     <h3 class="text-2xl">"Tu organises"</h3>
-                    <span class="font-extrabold rounded-full border px-3 py-1 bg-bg">
+                    <span class="font-extrabold rounded-full border px-3 py-1 bg-surface">
                         "COMPTE REQUIS"
                     </span>
                 </div>
@@ -90,10 +90,10 @@ pub fn HowItWorksPage() -> impl IntoView {
                         .collect_view()}
                 </ol>
             </div>
-            <div class="flex-1 rounded-blob border overflow-hidden shadow-blue-5 bg-bg">
+            <div class="flex-1 rounded-blob border overflow-hidden shadow-blue-5 bg-surface">
                 <div class="flex justify-between bg-blue-500 p-5 border-b items-center">
                     <h3 class="text-2xl text-bg">"Tu participes"</h3>
-                    <span class="font-extrabold rounded-full border px-3 py-1 bg-bg">
+                    <span class="font-extrabold rounded-full border px-3 py-1 bg-surface">
                         "AUCUN COMPTE"
                     </span>
                 </div>
@@ -124,7 +124,7 @@ pub fn HowItWorksPage() -> impl IntoView {
                 .into_iter()
                 .map(|(title, desc)| {
                     view! {
-                        <div class="border bg-bg rounded-blob shadow-raspberry-5 flex items-center">
+                        <div class="border bg-surface rounded-blob shadow-raspberry-5 flex items-center">
                             <div class="px-5 py-3 space-y-3">
                                 <h4 class="font-semibold text-xl">{title}</h4>
                                 <p class="font-semibold">{desc}</p>

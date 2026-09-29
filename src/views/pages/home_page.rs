@@ -13,7 +13,7 @@ pub fn HomePage() -> impl IntoView {
             "Deux tirages, zéro prise de tête"
         </h3>
         <div class="flex flex-col md:flex-row gap-5 mb-10">
-            <CardLink class="flex-1" link="/" bg_color=Color::Bg shadow_color=Color::Blue>
+            <CardLink class="flex-1" link="/" bg_color=Color::Surface shadow_color=Color::Blue>
                 <div class="flex gap-2">
                     <div class="size-10 rounded-chip bg-butter-500 border"></div>
                     <div class="size-10 rounded-chip bg-blue-500 border"></div>
@@ -25,7 +25,7 @@ pub fn HomePage() -> impl IntoView {
                 </p>
                 <p class="font-display font-semibold">"C'est parti →"</p>
             </CardLink>
-            <CardLink class="flex-1" link="/" bg_color=Color::Bg shadow_color=Color::Raspberry>
+            <CardLink class="flex-1" link="/" bg_color=Color::Surface shadow_color=Color::Raspberry>
                 <div class="flex gap-2">
                     <div class="size-10 rounded-full bg-butter-500 border"></div>
                     <div class="size-10 rounded-full bg-blue-500 border"></div>
@@ -47,7 +47,7 @@ pub fn HomePage() -> impl IntoView {
                     class="text-nowrap"
                     link="/comment-ca-marche"
                     label="Voir comment ça marche →"
-                    bg_color=Color::Bg
+                    bg_color=Color::Surface
                     shadow_color=Color::Blue
                 />
             </div>
@@ -79,13 +79,13 @@ fn LandingSection() -> impl IntoView {
                     <ButtonLink
                         link=""
                         label="Former des équipes"
-                        bg_color=Color::Bg
+                        bg_color=Color::Surface
                         shadow_color=Color::Butter
                     />
                     <ButtonLink
                         link=""
                         label="Lancer un secret Santa"
-                        bg_color=Color::Bg
+                        bg_color=Color::Surface
                         shadow_color=Color::Raspberry
                     />
                 </div>

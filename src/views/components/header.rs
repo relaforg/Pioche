@@ -16,7 +16,7 @@ pub fn Header() -> impl IntoView {
                 <ButtonLink
                     link="/connexion"
                     label="Se connecter"
-                    bg_color=Color::Bg
+                    bg_color=Color::Surface
                     shadow_color=Color::Blue
                 />
             </div>

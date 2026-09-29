@@ -8,7 +8,45 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postresql/data
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U relaforg -d pioche"]
+      interval: 2s
+      retries: 10
+
+  app-dev:
+    profiles: ["dev"]
+    build: { context: ., target: dev }
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      LEPTOS_SITE_ADDR: 0.0.0.0:3000
+      DATABASE_URL: postgres://relaforg:test@db:5432/pioche
+      RUSTFLAGS: --cfg erase_components
+    volumes:
+      - .:/app
+      - target-cache:/app/target
+      - cargo-registry:/usr/local/cargo/registry
+
+  app-prod:
+    profiles: ["prod"]
+    build: { context: ., target: prod }
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      LEPTOS_SITE_ADDR: 0.0.0.0:8080
+      DATABASE_URL: postgres://relaforg:test@db:5432/pioche
+      LEPTOS_ENV: PROD
 
 volumes:
   pgdata:
+  target-cache:
+  cargo-registry:
+

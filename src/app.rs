@@ -1,11 +1,13 @@
 use crate::views::{
-    components::{footer::Footer, header::Header},
-    pages::{home_page::HomePage, how_it_works_page::HowItWorksPage},
+    components::{
+        footer::Footer, header::Header, login_form::LoginForm, register_form::RegisterForm,
+    },
+    pages::{auth_page::AuthPage, home_page::HomePage, how_it_works_page::HowItWorksPage},
 };
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
-    components::{Route, Router, Routes},
+    components::{ParentRoute, Route, Router, Routes},
     path,
 };
 
@@ -44,6 +46,10 @@ pub fn App() -> impl IntoView {
                     <Routes fallback=|| "Page not found.".into_view()>
                         <Route path=path!("/") view=HomePage />
                         <Route path=path!("/comment-ca-marche") view=HowItWorksPage />
+                        <ParentRoute path=path!("") view=AuthPage>
+                            <Route path=path!("connexion") view=LoginForm />
+                            <Route path=path!("inscription") view=RegisterForm />
+                        </ParentRoute>
                     </Routes>
                 </main>
             </Router>

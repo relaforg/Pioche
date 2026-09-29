@@ -1,4 +1,5 @@
-.PHONY: help db dev prod build-prod down logs ps size nuke
+.PHONY: help db dev prod build-prod down logs ps size nuke \
+	migrate migrate-down migrate-status migrate-new migrate-fresh entities
 
 ## help       : liste les commandes
 help:
@@ -35,6 +36,32 @@ ps:
 ## size       : taille des images du projet
 size:
 	docker images --filter "reference=pioche-*"
+
+## migrate        : applique les migrations en attente
+migrate: db
+	sea-orm-cli migrate up
+
+## migrate-down   : annule la dernière migration appliquée
+migrate-down: db
+	sea-orm-cli migrate down
+
+## migrate-status : affiche l'état de chaque migration
+migrate-status: db
+	sea-orm-cli migrate status
+
+## migrate-new    : crée une migration vide (make migrate-new name=add_name_to_users)
+migrate-new:
+	@[ -n "$(name)" ] || { echo "Usage : make migrate-new name=<nom>"; exit 1; }
+	sea-orm-cli migrate generate $(name)
+
+## migrate-fresh  : drop toutes les tables puis réapplique tout (données perdues !)
+migrate-fresh: db
+	@read -p "Supprimer toutes les tables de la base ? [y/N] " ok && [ "$$ok" = y ]
+	sea-orm-cli migrate fresh
+
+## entities       : régénère src/entities depuis le schéma de la base
+entities: db
+	sea-orm-cli generate entity --entity-format dense -o src/entities
 
 ## nuke       : arrête tout ET supprime les volumes (base de données incluse !)
 nuke:

@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 
 #[server]
-pub async fn register(email: String, password: String) -> Result<(), ServerFnError> {
+pub async fn register(email: String, name: String, password: String) -> Result<(), ServerFnError> {
     use crate::entities::users;
     use crate::server::ssr::hash::hash;
     use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection};
@@ -21,6 +21,7 @@ pub async fn register(email: String, password: String) -> Result<(), ServerFnErr
     let user = users::ActiveModel {
         password_hash: Set(password_hash),
         email: Set(email),
+        name: Set(name),
         ..Default::default()
     };
 

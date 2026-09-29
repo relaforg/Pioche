@@ -8,6 +8,7 @@ enum Users {
     Table,
     Id,
     Email,
+    Name,
     PasswordHash,
     CreatedAt,
 }
@@ -22,6 +23,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(pk_auto(Users::Id))
                     .col(string_uniq(Users::Email))
+                    .col(string(Users::Name))
                     .col(string(Users::PasswordHash))
                     .col(timestamp_with_time_zone_default_now(Users::CreatedAt))
                     .to_owned(),

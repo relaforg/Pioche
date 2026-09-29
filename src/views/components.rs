@@ -3,4 +3,6 @@ pub mod card;
 pub mod card_link;
 pub mod footer;
 pub mod header;
+pub mod login_form;
 pub mod pill;
+pub mod register_form;

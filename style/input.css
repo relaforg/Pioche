@@ -184,5 +184,10 @@
 	/* a { color: var(--color-blue-500); text-decoration: none; } */
 	/* a:hover { color: var(--color-raspberry-500); } */
 	::selection { background: var(--color-butter-500); color: var(--color-ink); }
-	:focus-visible { outline: 2px solid var(--color-blue-500); outline-offset: 3px; }
+	:focus-visible { outline: none; }
+	label {
+		font-weight: 600;
+		font-family: var(--font-display);
+		font-size: 1.125rem;
+	}
 }

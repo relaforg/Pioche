@@ -28,7 +28,11 @@ pub async fn register(email: String, password: String) -> Result<(), ServerFnErr
     let db = use_context::<DatabaseConnection>()
         .ok_or_else(|| ServerFnError::new("No DB connection"))?;
 
-    if users::Entity::find_by_email(&email).one(&db).await?.is_some() {
+    if users::Entity::find_by_email(&email)
+        .one(&db)
+        .await?
+        .is_some()
+    {
         return Err(ServerFnError::new("Email already in use"));
     }
 
@@ -36,7 +40,8 @@ pub async fn register(email: String, password: String) -> Result<(), ServerFnErr
     let user = users::ActiveModel {
         password_hash: Set(password_hash),
         email: Set(email),
-        ..Default::default()};
+        ..Default::default()
+    };
 
     user.insert(&db).await?;
     Ok(())
@@ -49,13 +54,15 @@ pub async fn connect(email: String, password: String) -> Result<(), ServerFnErro
 
     let user = users::Entity::find_by_email(&email).one(&db).await?;
     let Some(user) = user else {
-        let _ = tokio::task::spawn_blocking(move || verify("honeypot".to_string(), DUMMY_HASH.clone())).await;
-        return Err(ServerFnError::new("Invalid email or password"))
+        let _ =
+            tokio::task::spawn_blocking(move || verify("honeypot".to_string(), DUMMY_HASH.clone()))
+                .await;
+        return Err(ServerFnError::new("Invalid email or password"));
     };
-    
+
     match tokio::task::spawn_blocking(move || verify(password, user.password_hash)).await? {
         Ok(true) => Ok(()),
         Ok(false) => Err(ServerFnError::new("Invalid email or password")),
-        Err(err) => Err(err.into())
+        Err(err) => Err(err.into()),
     }
 }

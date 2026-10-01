@@ -11,6 +11,7 @@ pub async fn register(
 ) -> Result<(), AppError> {
     use crate::entities::users;
     use crate::server::ssr::hash::hash;
+    use leptos_axum::redirect;
     use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection};
 
     let email = email.trim();
@@ -20,6 +21,16 @@ pub async fn register(
     let name = name.trim();
     if name.is_empty() {
         return Err(AppError::Invalid("Le prénom est obligatoire".into()));
+    }
+    if password.len() < 12 {
+        return Err(AppError::Invalid(
+            "Le mot de passe doit contenir 12 characteres minimum".into(),
+        ));
+    }
+    if password != validation_password {
+        return Err(AppError::Invalid(
+            "Les mots de passe ne sont pas identiques".into(),
+        ));
     }
 
     let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
@@ -41,6 +52,7 @@ pub async fn register(
     };
 
     user.insert(&db).await?;
+    redirect("/");
     Ok(())
 }
 

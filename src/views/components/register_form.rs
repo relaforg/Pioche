@@ -39,6 +39,7 @@ pub fn RegisterForm() -> impl IntoView {
 fn FormView() -> impl IntoView {
     let register = ServerAction::<Register>::new();
     let error = move || register.value().get().and_then(|res| res.err());
+    let password = signal(String::new());
     view! {
         <ActionForm action=register>
             <label for="name">"Ton prénom"</label>
@@ -63,8 +64,15 @@ fn FormView() -> impl IntoView {
                 type="password"
                 placeholder="••••••••"
                 class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-3"
+                bind:value=password
                 required
             />
+            <p
+                class="text-right text-raspberry-500"
+                class=("hidden", move || password.0.with(|p| p.chars().count()) >= 12)
+            >
+                "12 char. min."
+            </p>
             <label for="validation_password">"Valider le mot de passe"</label>
             <input
                 name="validation_password"

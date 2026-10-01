@@ -57,23 +57,26 @@ pub async fn register(
 }
 
 #[server]
-pub async fn connect(email: String, password: String) -> Result<(), ServerFnError> {
+pub async fn connect(email: String, password: String) -> Result<(), AppError> {
     use crate::entities::users;
     use crate::server::ssr::hash::{verify, DUMMY_HASH};
+    use leptos_axum::redirect;
     use sea_orm::DatabaseConnection;
 
-    let db = use_context::<DatabaseConnection>()
-        .ok_or_else(|| ServerFnError::new("No DB connection"))?;
+    let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
 
     let user = users::Entity::find_by_email(&email).one(&db).await?;
     let Some(user) = user else {
         let _ = tokio::task::spawn_blocking(move || verify("honeypot", DUMMY_HASH.as_str())).await;
-        return Err(ServerFnError::new("Invalid email or password"));
+        return Err(AppError::Invalid("Invalid email or password".into()));
     };
 
     match tokio::task::spawn_blocking(move || verify(&password, &user.password_hash)).await? {
-        Ok(true) => Ok(()),
-        Ok(false) => Err(ServerFnError::new("Invalid email or password")),
+        Ok(true) => {
+            redirect("/");
+            Ok(())
+        }
+        Ok(false) => Err(AppError::Invalid("Invalid email or password".into())),
         Err(err) => Err(err.into()),
     }
 }

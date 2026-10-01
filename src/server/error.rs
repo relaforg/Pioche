@@ -11,6 +11,7 @@ pub enum AppError {
     Invalid(String),
     Internal,
     ServerFn(ServerFnErrorErr),
+    Unauthorized,
 }
 
 impl FromServerFnError for AppError {
@@ -27,6 +28,7 @@ impl fmt::Display for AppError {
             AppError::Invalid(msg) => write!(f, "{msg}"),
             AppError::Internal => write!(f, "Oups, une erreur est survenue"),
             AppError::ServerFn(_) => write!(f, "Impossible de joindre le serveur"),
+            AppError::Unauthorized => write!(f, "Unauthorized access"),
         }
     }
 }

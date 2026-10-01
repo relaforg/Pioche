@@ -105,6 +105,7 @@
 	--text-shadow-raspberry-9: 9px 9px 0 var(--color-raspberry-500);
 
 	--animate-bob: bob 3s ease-in-out infinite;
+	--animate-shake: shake 0.35s ease-in-out;
 
 	--container-shell: 1160px;
 }
@@ -112,6 +113,12 @@
 @keyframes bob {
 0%, 100% { transform: rotate(-5deg) translateY(0); }
 50%      { transform: rotate(-5deg) translateY(-8px); }
+}
+
+@keyframes shake {
+0%, 100%      { transform: translateX(0); }
+20%, 60%      { transform: translateX(-5px); }
+40%, 80%      { transform: translateX(5px); }
 }
 
 /* ── thème nuit ────────────────────────────────────────────── */
@@ -189,5 +196,13 @@
 		font-weight: 600;
 		font-family: var(--font-display);
 		font-size: 1.125rem;
+	}
+	/* champ invalide, seulement après interaction ou tentative de submit */
+	:is(input, textarea, select):user-invalid {
+		border-color: var(--color-raspberry-600);
+		/* box-shadow: 3px 3px 0 var(--color-raspberry-600); */
+		@media (prefers-reduced-motion: no-preference) {
+			animation: var(--animate-shake);
+		}
 	}
 }

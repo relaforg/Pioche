@@ -1,6 +1,6 @@
 use leptos::prelude::*;
-use leptos_router::components::Form;
 
+use crate::server::auth::Register;
 use crate::views::{colors::Color, components::button_link::ButtonLink};
 
 #[component]
@@ -29,44 +29,60 @@ pub fn RegisterForm() -> impl IntoView {
                     </div>
                 </div>
                 <h3 class="font-bold text-3xl my-7">"On commence par toi"</h3>
-                <Form method="POST" action="">
-                    <label for="name">"Ton prénom"</label>
-                    <input
-                        id="name"
-                        type="text"
-                        placeholder="Manon"
-                        class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-3"
-                    />
-                    <label for="email">"E-mail"</label>
-                    <input
-                        id="email"
-                        type="email"
-                        placeholder="manon@exemple.fr"
-                        class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-3"
-                    />
-                    <label for="mdp1">"Mot de passe"</label>
-                    <input
-                        id="mdp1"
-                        type="password"
-                        placeholder="••••••••"
-                        class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-3"
-                    />
-                    <label for="mdp2">"Valider mot de passe"</label>
-                    <input
-                        id="mdp2"
-                        type="password"
-                        placeholder="••••••••"
-                        class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-5"
-                    />
-                    <div class="flex">
-                        <input
-                            type="submit"
-                            value="Je crée mon compte"
-                            class="cursor-pointer border rounded-full py-3 bg-raspberry-500 btn-press-ink font-display font-semibold w-full"
-                        />
-                    </div>
-                </Form>
+                <FormView />
             </div>
         </div>
+    }
+}
+
+#[island]
+fn FormView() -> impl IntoView {
+    let register = ServerAction::<Register>::new();
+    let error = move || register.value().get().and_then(|res| res.err());
+    view! {
+        <ActionForm action=register>
+            <label for="name">"Ton prénom"</label>
+            <input
+                name="name"
+                type="text"
+                placeholder="Manon"
+                class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-3"
+                required
+            />
+            <label for="email">"E-mail"</label>
+            <input
+                name="email"
+                type="email"
+                placeholder="manon@exemple.fr"
+                class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-3"
+                required
+            />
+            <label for="password">"Mot de passe"</label>
+            <input
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-3"
+                required
+            />
+            <label for="validation_password">"Valider le mot de passe"</label>
+            <input
+                name="validation_password"
+                type="password"
+                placeholder="••••••••"
+                class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-5"
+                required
+            />
+            <div class="flex my-7">
+                <input
+                    type="submit"
+                    value="Je crée mon compte"
+                    class="cursor-pointer border rounded-full py-3 bg-raspberry-500 btn-press-ink font-display font-semibold w-full"
+                />
+            </div>
+            {move || {
+                error().map(|e| view! { <p class="text-center text-red-600">{e.to_string()}</p> })
+            }}
+        </ActionForm>
     }
 }

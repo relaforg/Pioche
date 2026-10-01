@@ -1,27 +1,42 @@
 use leptos::prelude::*;
 
+use crate::server::error::AppError;
+
 #[server]
-pub async fn register(email: String, name: String, password: String) -> Result<(), ServerFnError> {
+pub async fn register(
+    email: String,
+    name: String,
+    password: String,
+    validation_password: String,
+) -> Result<(), AppError> {
     use crate::entities::users;
     use crate::server::ssr::hash::hash;
     use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection};
 
-    let db = use_context::<DatabaseConnection>()
-        .ok_or_else(|| ServerFnError::new("No DB connection"))?;
+    let email = email.trim();
+    if email.is_empty() {
+        return Err(AppError::Invalid("L'email est obligatoire".into()));
+    }
+    let name = name.trim();
+    if name.is_empty() {
+        return Err(AppError::Invalid("Le prénom est obligatoire".into()));
+    }
 
-    if users::Entity::find_by_email(&email)
+    let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
+
+    if users::Entity::find_by_email(email)
         .one(&db)
         .await?
         .is_some()
     {
-        return Err(ServerFnError::new("Email already in use"));
+        return Err(AppError::Invalid("Email already in use".into()));
     }
 
     let password_hash = tokio::task::spawn_blocking(move || hash(&password)).await??;
     let user = users::ActiveModel {
         password_hash: Set(password_hash),
-        email: Set(email),
-        name: Set(name),
+        email: Set(email.into()),
+        name: Set(name.into()),
         ..Default::default()
     };
 

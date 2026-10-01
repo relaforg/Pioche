@@ -26,6 +26,9 @@ impl MigrationTrait for Migration {
                     .col(string(Users::Name))
                     .col(string(Users::PasswordHash))
                     .col(timestamp_with_time_zone_default_now(Users::CreatedAt))
+                    .check(Expr::col(Users::Email).ne(""))
+                    .check(Expr::col(Users::Name).ne(""))
+                    .check(Expr::col(Users::PasswordHash).ne(""))
                     .to_owned(),
             )
             .await

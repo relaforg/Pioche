@@ -30,7 +30,7 @@ pub fn LoginForm() -> impl IntoView {
                         />
                     </div>
                 </div>
-                <h3 class="font-bold text-3xl my-7">"On commence par toi"</h3>
+                <h3 class="font-bold text-3xl my-7">"Content de te revoir !"</h3>
                 <FormView />
             </div>
         </div>

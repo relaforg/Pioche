@@ -1,25 +1,36 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
 
-use crate::views::{colors::Color, components::button_link::ButtonLink};
+use crate::{
+    server::session::current_user,
+    views::{colors::Color, components::button_link::ButtonLink},
+};
 
 #[component]
 pub fn Header() -> impl IntoView {
+    let user = current_user();
     view! {
         <div class="flex justify-between mt-5 mb-15">
             <A href="/" attr:class="flex gap-3 items-center">
                 <Logo />
                 <h2 class="text-3xl text-shadow-blue-3">"Pioche !"</h2>
             </A>
-            <div class="flex gap-3 items-center">
-                // <ButtonLink link="/" label="Comment ça marche ?" bg_color=Color::Bg shadow_color=Color::Butter/>
-                <ButtonLink
-                    link="/connexion"
-                    label="Se connecter"
-                    bg_color=Color::Surface
-                    shadow_color=Color::Blue
-                />
-            </div>
+            {match user {
+                Some(user) => view! { <p>"Bonjour "{user.name}</p> }.into_any(),
+                None => {
+                    view! {
+                        <div class="flex gap-3 items-center">
+                            <ButtonLink
+                                link="/connexion"
+                                label="Se connecter"
+                                bg_color=Color::Surface
+                                shadow_color=Color::Blue
+                            />
+                        </div>
+                    }
+                        .into_any()
+                }
+            }}
         </div>
     }
 }

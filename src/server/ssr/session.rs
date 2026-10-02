@@ -128,6 +128,7 @@ async fn resolve(db: &DatabaseConnection, token: String) -> (Option<CurrentUser>
             let current_user = CurrentUser {
                 id: user.id,
                 name: user.name,
+                email: user.email,
             };
             let now = Utc::now();
 

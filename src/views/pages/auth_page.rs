@@ -1,8 +1,14 @@
 use leptos::prelude::*;
-use leptos_router::components::Outlet;
+use leptos_router::components::{Outlet, Redirect};
+
+use crate::server::session::current_user;
 
 #[component]
 pub fn AuthPage() -> impl IntoView {
+    if current_user().is_some() {
+        return view! { <Redirect path="/" /> }.into_any();
+    }
+
     let steps = [
         (
             "Tous tes tirages au même endroit",
@@ -51,5 +57,5 @@ pub fn AuthPage() -> impl IntoView {
             </div>
             <Outlet />
         </div>
-    }
+    }.into_any()
 }

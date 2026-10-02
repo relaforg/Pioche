@@ -11,6 +11,7 @@ pub async fn register(
 ) -> Result<(), AppError> {
     use crate::entities::users;
     use crate::server::ssr::hash::hash;
+    use crate::server::ssr::session::{append_cookie, create_session};
     use leptos_axum::redirect;
     use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection};
 
@@ -51,7 +52,9 @@ pub async fn register(
         ..Default::default()
     };
 
-    user.insert(&db).await?;
+    let users::Model { id, .. } = user.insert(&db).await?;
+    let cookie = create_session(&db, id).await?;
+    append_cookie(cookie)?;
     redirect("/");
     Ok(())
 }
@@ -60,23 +63,54 @@ pub async fn register(
 pub async fn connect(email: String, password: String) -> Result<(), AppError> {
     use crate::entities::users;
     use crate::server::ssr::hash::{verify, DUMMY_HASH};
+    use crate::server::ssr::session::{append_cookie, create_session};
     use leptos_axum::redirect;
     use sea_orm::DatabaseConnection;
 
     let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
 
-    let user = users::Entity::find_by_email(&email).one(&db).await?;
+    let user = users::Entity::find_by_email(email.trim()).one(&db).await?;
     let Some(user) = user else {
         let _ = tokio::task::spawn_blocking(move || verify("honeypot", DUMMY_HASH.as_str())).await;
         return Err(AppError::Invalid("Invalid email or password".into()));
     };
+    let users::Model {
+        id, password_hash, ..
+    } = user;
 
-    match tokio::task::spawn_blocking(move || verify(&password, &user.password_hash)).await? {
+    match tokio::task::spawn_blocking(move || verify(&password, &password_hash)).await? {
         Ok(true) => {
+            let cookie = create_session(&db, id).await?;
+            append_cookie(cookie)?;
             redirect("/");
             Ok(())
         }
         Ok(false) => Err(AppError::Invalid("Invalid email or password".into())),
         Err(err) => Err(err.into()),
     }
+}
+
+#[server]
+pub async fn logout() -> Result<(), AppError> {
+    use crate::entities::sessions;
+    use crate::server::ssr::session::{append_cookie, hash_token, read_token, removal_cookie};
+    use axum::http::request::Parts;
+    use leptos_axum::redirect;
+    use sea_orm::DatabaseConnection;
+
+    let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
+    let hash = use_context::<Parts>()
+        .and_then(|parts| read_token(&parts.headers))
+        .and_then(|token| hash_token(&token));
+
+    if let Some(hash) = hash {
+        sessions::Entity::delete_by_token_hash(hash)
+            .exec(&db)
+            .await?;
+    }
+
+    let cookie = removal_cookie();
+    append_cookie(cookie)?;
+    redirect("/");
+    Ok(())
 }

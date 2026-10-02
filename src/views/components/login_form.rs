@@ -62,7 +62,7 @@ fn FormView() -> impl IntoView {
             <div class="flex my-7">
                 <input
                     type="submit"
-                    value="Je crée mon compte"
+                    value="Se connecter"
                     class="cursor-pointer border rounded-full py-3 bg-raspberry-500 btn-press-ink font-display font-semibold w-full"
                 />
             </div>

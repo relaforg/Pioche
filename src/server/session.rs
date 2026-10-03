@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use crate::server::error::AppError;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CurrentUser {
     pub id: i32,
     pub name: String,

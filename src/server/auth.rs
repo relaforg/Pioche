@@ -55,7 +55,7 @@ pub async fn register(
     let users::Model { id, .. } = user.insert(&db).await?;
     let cookie = create_session(&db, id).await?;
     append_cookie(cookie)?;
-    redirect("/");
+    redirect("/mes-tirages");
     Ok(())
 }
 
@@ -82,7 +82,7 @@ pub async fn connect(email: String, password: String) -> Result<(), AppError> {
         Ok(true) => {
             let cookie = create_session(&db, id).await?;
             append_cookie(cookie)?;
-            redirect("/");
+            redirect("/mes-tirages");
             Ok(())
         }
         Ok(false) => Err(AppError::Invalid("Invalid email or password".into())),

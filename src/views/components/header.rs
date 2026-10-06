@@ -82,7 +82,7 @@ fn UserMenu(user: CurrentUser) -> impl IntoView {
                     <div class="p-2">
                         <hr class="border-dashed border-t-2 border-line" />
                         <a
-                            href=""
+                            href="/mes-tirages"
                             class="block font-display font-semibold text-left px-4 py-2 border border-transparent cursor-pointer my-1 w-full rounded-logo hover:border-ink hover:bg-butter-500"
                         >
                             "Mes tirages"

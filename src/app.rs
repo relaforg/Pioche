@@ -2,7 +2,10 @@ use crate::views::{
     components::{
         footer::Footer, header::Header, login_form::LoginForm, register_form::RegisterForm,
     },
-    pages::{auth_page::AuthPage, home_page::HomePage, how_it_works_page::HowItWorksPage},
+    pages::{
+        auth_page::AuthPage, home_page::HomePage, how_it_works_page::HowItWorksPage,
+        my_draws_page::MyDrawsPage,
+    },
 };
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
@@ -50,6 +53,7 @@ pub fn App() -> impl IntoView {
                             <Route path=path!("connexion") view=LoginForm />
                             <Route path=path!("inscription") view=RegisterForm />
                         </ParentRoute>
+                        <Route path=path!("/mes-tirages") view=MyDrawsPage />
                     </Routes>
                 </main>
             </Router>

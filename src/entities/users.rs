@@ -14,6 +14,8 @@ pub struct Model {
     pub password_hash: String,
     pub created_at: DateTimeWithTimeZone,
     #[sea_orm(has_many)]
+    pub draws: HasMany<super::draws::Entity>,
+    #[sea_orm(has_many)]
     pub sessions: HasMany<super::sessions::Entity>,
 }
 

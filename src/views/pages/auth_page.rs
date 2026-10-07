@@ -6,7 +6,7 @@ use crate::server::session::current_user;
 #[component]
 pub fn AuthPage() -> impl IntoView {
     if current_user().is_some() {
-        return view! { <Redirect path="/" /> }.into_any();
+        return view! { <Redirect path="/mes-tirages" /> }.into_any();
     }
 
     let steps = [

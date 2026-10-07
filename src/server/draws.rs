@@ -23,10 +23,33 @@ pub struct Participant {
     pub form_completed_at: Option<DateTime<FixedOffset>>,
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum DrawKind {
     SecretSanta,
     Teams,
+}
+
+impl DrawKind {
+    pub fn form_value(self) -> &'static str {
+        match self {
+            DrawKind::SecretSanta => "SecretSanta",
+            DrawKind::Teams => "Teams",
+        }
+    }
+}
+
+#[server]
+pub async fn add_draw(
+    name: String,
+    kind: DrawKind,
+    participants: Vec<String>,
+) -> Result<i32, AppError> {
+    use crate::server::session::require_user;
+    use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, LoaderTrait, QueryFilter};
+
+    let user = require_user()?;
+    let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
+    Ok(23)
 }
 
 #[server]

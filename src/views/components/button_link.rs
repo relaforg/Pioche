@@ -12,13 +12,16 @@ pub fn ButtonLink(
     #[prop(optional)] class: &'static str,
 ) -> impl IntoView {
     view! {
-        <A href=link>
-            <button class=format!(
-                "cursor-pointer border border-line rounded-full py-2 px-4 {} {} {}",
+        <A
+            href=link
+            attr:class=format!(
+                "font-display font-semibold cursor-pointer border border-line rounded-full py-2 px-4 {} {} {}",
                 class,
                 bg_color.bg(),
                 shadow_color.btn_press(),
-            )>{label}</button>
+            )
+        >
+            {label}
         </A>
     }
 }

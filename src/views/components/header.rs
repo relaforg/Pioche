@@ -21,7 +21,7 @@ pub fn Header() -> impl IntoView {
                     view! {
                         <div class="flex gap-5 items-center">
                             <ButtonLink
-                                link=""
+                                link="/creer-un-tirage"
                                 label="+ Nouveau tirage"
                                 bg_color=Color::Raspberry
                                 shadow_color=Color::Ink

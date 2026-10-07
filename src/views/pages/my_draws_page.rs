@@ -40,7 +40,7 @@ pub fn MyDrawsPage() -> impl IntoView {
                     }
                 })}
             </Suspense>
-            <A href="/">
+            <A href="/creer-un-tirage">
                 <div class="h-50 w-full border border-dashed rounded-blob bg-bg grid place-items-center hover:bg-surface cursor-pointer">
                     <div class="flex justify-center flex-col">
                         <span class="grid place-items-center font-display mx-auto font-semibold text-3xl bg-butter-500 border rounded-full size-15 my-5">
@@ -76,7 +76,12 @@ fn DrawView(draw: Draw) -> impl IntoView {
                     class=("text-surface", move || matches!(color, Color::Blue))
                 >
                     <h4>{label}</h4>
-                    <h4>{draw.created_at.format_localized("%d %b", chrono::Locale::fr_FR).to_string()}</h4>
+                    <h4>
+                        {draw
+                            .created_at
+                            .format_localized("%d %b", chrono::Locale::fr_FR)
+                            .to_string()}
+                    </h4>
                 </div>
                 <div class="px-5 py-3 flex flex-col gap-2 flex-1">
                     <h3 class="text-2xl">{draw.name}</h3>

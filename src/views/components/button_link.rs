@@ -15,7 +15,7 @@ pub fn ButtonLink(
         <A
             href=link
             attr:class=format!(
-                "font-display font-semibold cursor-pointer border border-line rounded-full py-2 px-4 {} {} {}",
+                "block text-center font-display font-semibold cursor-pointer border border-line rounded-full py-2 px-4 {} {} {}",
                 class,
                 bg_color.bg(),
                 shadow_color.btn_press(),

@@ -197,6 +197,15 @@
 		font-family: var(--font-display);
 		font-size: 1.125rem;
 	}
+	/* champs texte uniquement : ni submit, ni radio/checkbox */
+	input:where(:not([type]), [type="text"], [type="email"], [type="password"], [type="search"], [type="tel"], [type="url"], [type="number"]) {
+		width: 100%;
+		padding: --spacing(3);
+		background-color: var(--color-neutral-200);
+		border-width: var(--default-border-width);
+		border-radius: var(--radius-pill);
+		font-weight: var(--font-weight-bold);
+	}
 	/* champ invalide, seulement après interaction ou tentative de submit */
 	:is(input, textarea, select):user-invalid {
 		border-color: var(--color-raspberry-600);

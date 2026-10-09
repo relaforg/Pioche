@@ -1,8 +1,12 @@
+use std::collections::HashSet;
+
 use chrono::{DateTime, FixedOffset};
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::server::error::AppError;
+
+pub const MAX_PARTICIPANTS: usize = 100;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Draw {
@@ -36,18 +40,74 @@ impl DrawKind {
             DrawKind::Teams => "Teams",
         }
     }
+
+    pub fn min_participants(self) -> usize {
+        match self {
+            DrawKind::SecretSanta => 3,
+            DrawKind::Teams => 2,
+        }
+    }
+}
+
+pub struct Participants(Vec<String>);
+
+impl Participants {
+    pub fn parse(kind: DrawKind, raw: Vec<String>) -> Result<Self, AppError> {
+        if raw.len() > MAX_PARTICIPANTS {
+            return Err(AppError::Invalid("Trop de participants".into()));
+        }
+
+        let mut seen = HashSet::new();
+        let mut names = Vec::with_capacity(raw.len());
+
+        for r in raw {
+            let name = parse_name(&r)?;
+            if !seen.insert(name.to_lowercase()) {
+                return Err(AppError::Invalid(format!(
+                    "Les doublons ne sont pas autorisés : {name}"
+                )));
+            }
+            names.push(name);
+        }
+        if seen.len() < kind.min_participants() {
+            return Err(AppError::Invalid("Pas assez de participants".into()));
+        }
+        Ok(Participants(names))
+    }
+
+    pub fn into_inner(self) -> Vec<String> {
+        self.0
+    }
+}
+
+pub fn parse_name(raw: &str) -> Result<String, AppError> {
+    let Some(name) = normalize_participant(raw) else {
+        return Err(AppError::Invalid("Un prénom est vide".into()));
+    };
+    if name.chars().count() > 50 {
+        return Err(AppError::Invalid(
+            "Prénom trop long (50 character max)".into(),
+        ));
+    }
+    Ok(name)
+}
+
+pub fn normalize_participant(raw: &str) -> Option<String> {
+    let name = raw.split_whitespace().collect::<Vec<_>>().join(" ");
+    (!name.is_empty()).then_some(name)
 }
 
 #[server]
 pub async fn add_draw(
     name: String,
     kind: DrawKind,
-    participants: Vec<String>,
+    #[server(default)] participants: Vec<String>,
 ) -> Result<i32, AppError> {
     use crate::server::session::require_user;
     use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, LoaderTrait, QueryFilter};
 
     let user = require_user()?;
+    let participants = Participants::parse(kind, participants)?;
     let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
     Ok(23)
 }

@@ -47,7 +47,7 @@ fn FormView() -> impl IntoView {
                 name="name"
                 type="text"
                 placeholder="Manon"
-                class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-3"
+                class="mt-2 mb-3"
                 required
             />
             <label for="email">"E-mail"</label>
@@ -55,7 +55,7 @@ fn FormView() -> impl IntoView {
                 name="email"
                 type="email"
                 placeholder="manon@exemple.fr"
-                class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-3"
+                class="mt-2 mb-3"
                 required
             />
             <label for="password">"Mot de passe"</label>
@@ -63,7 +63,7 @@ fn FormView() -> impl IntoView {
                 name="password"
                 type="password"
                 placeholder="••••••••"
-                class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-3"
+                class="mt-2 mb-3"
                 bind:value=password
                 required
             />
@@ -78,7 +78,7 @@ fn FormView() -> impl IntoView {
                 name="validation_password"
                 type="password"
                 placeholder="••••••••"
-                class="bg-neutral-200 w-full border rounded-full p-3 font-bold mt-2 mb-5"
+                class="mt-2 mb-5"
                 required
             />
             <div class="flex my-7">

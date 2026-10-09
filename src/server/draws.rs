@@ -53,25 +53,12 @@ pub struct Participants(Vec<String>);
 
 impl Participants {
     pub fn parse(kind: DrawKind, raw: Vec<String>) -> Result<Self, AppError> {
-        if raw.len() > MAX_PARTICIPANTS {
-            return Err(AppError::Invalid("Trop de participants".into()));
-        }
+        let names = parse_names(raw)?;
 
-        let mut seen = HashSet::new();
-        let mut names = Vec::with_capacity(raw.len());
-
-        for r in raw {
-            let name = parse_name(&r)?;
-            if !seen.insert(name.to_lowercase()) {
-                return Err(AppError::Invalid(format!(
-                    "Les doublons ne sont pas autorisés : {name}"
-                )));
-            }
-            names.push(name);
-        }
-        if seen.len() < kind.min_participants() {
+        if names.len() < kind.min_participants() {
             return Err(AppError::Invalid("Pas assez de participants".into()));
         }
+
         Ok(Participants(names))
     }
 
@@ -90,6 +77,30 @@ pub fn parse_name(raw: &str) -> Result<String, AppError> {
         ));
     }
     Ok(name)
+}
+
+pub fn parse_names<I>(raw: I) -> Result<Vec<String>, AppError>
+where
+    I: IntoIterator,
+    I::Item: AsRef<str>,
+{
+    let mut seen = HashSet::new();
+    let mut names = Vec::new();
+
+    for r in raw {
+        if names.len() == MAX_PARTICIPANTS {
+            return Err(AppError::Invalid("Trop de participants".into()));
+        }
+        let name = parse_name(r.as_ref())?;
+        if !seen.insert(name.to_lowercase()) {
+            return Err(AppError::Invalid(format!(
+                "Les doublons ne sont pas autorisés : {name}"
+            )));
+        }
+        names.push(name);
+    }
+
+    Ok(names)
 }
 
 pub fn normalize_participant(raw: &str) -> Option<String> {

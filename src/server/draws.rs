@@ -67,6 +67,19 @@ impl Participants {
     }
 }
 
+pub struct Exclusion((String, String));
+
+impl Exclusion {
+    pub fn new(couple: (String, String)) -> Result<Self, AppError> {
+        if couple.0 == couple.1 {
+            return Err(AppError::Invalid(
+                "Une exclusion ne peux pas contenir 2 fois la même personne".into(),
+            ));
+        }
+        Ok(Exclusion(couple))
+    }
+}
+
 pub fn parse_name(raw: &str) -> Result<String, AppError> {
     let Some(name) = normalize_participant(raw) else {
         return Err(AppError::Invalid("Un prénom est vide".into()));

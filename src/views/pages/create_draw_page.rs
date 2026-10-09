@@ -67,6 +67,37 @@ fn FormView() -> impl IntoView {
 
     let dialog = NodeRef::<leptos::html::Dialog>::new();
 
+    let select_a = RwSignal::new(String::new());
+    let select_b = RwSignal::new(String::new());
+
+    let options_a = move || {
+        participants
+            .get()
+            .into_iter()
+            .map(|p| {
+                view! {
+                    <option value=p.clone() disabled=move || select_b.get() == p>
+                        {p.clone()}
+                    </option>
+                }
+            })
+            .collect_view()
+    };
+
+    let options_b = move || {
+        participants
+            .get()
+            .into_iter()
+            .map(|p| {
+                view! {
+                    <option value=p.clone() disabled=move || select_a.get() == p>
+                        {p.clone()}
+                    </option>
+                }
+            })
+            .collect_view()
+    };
+
     view! {
         <ActionForm action=add_draw>
             <fieldset class="grid gap-5 sm:grid-cols-2 mb-7">
@@ -170,6 +201,30 @@ fn FormView() -> impl IntoView {
                 {move || {
                     local_error.get().map(|e| view! { <p class="mt-2 text-raspberry-500">{e}</p> })
                 }}
+                <hr class="border-dashed border-t-2 border-line my-7" />
+                <h3 class="font-semibold text-lg">
+                    "Exclusions — qui ne doit pas tomber ensemble"
+                </h3>
+                <p class="font-semibold text-fg-soft">
+                    "Pratique pour les couples, les colocs, ou ceux qui se sont déjà offert l'an dernier."
+                </p>
+                <div class="flex gap-3 my-5">
+                    <select bind:value=select_a class="flex-1">
+                        <option value="">"Choisir..."</option>
+                        {options_a}
+                    </select>
+                    <p class="font-display text-xl self-center">"x"</p>
+                    <select bind:value=select_b class="flex-1">
+                        <option value="">"Choisir..."</option>
+                        {options_b}
+                    </select>
+                    <button
+                        type="button"
+                        class="cursor-pointer border rounded-full px-5 bg-surface btn-press-blue-500"
+                    >
+                        "+ Exclure"
+                    </button>
+                </div>
             </div>
             <div class="flex flex-col items-center gap-2 my-7">
                 <input

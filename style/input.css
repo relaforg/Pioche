@@ -198,13 +198,37 @@
 		font-size: 1.125rem;
 	}
 	/* champs texte uniquement : ni submit, ni radio/checkbox */
-	input:where(:not([type]), [type="text"], [type="email"], [type="password"], [type="search"], [type="tel"], [type="url"], [type="number"]) {
+	input:where(:not([type]), [type="text"], [type="email"], [type="password"], [type="search"], [type="tel"], [type="url"], [type="number"]), select {
 		width: 100%;
 		padding: --spacing(3);
 		background-color: var(--color-neutral-200);
 		border-width: var(--default-border-width);
 		border-radius: var(--radius-pill);
 		font-weight: var(--font-weight-bold);
+	}
+	/* select personnalisable (Chrome/Edge 135+) ; ailleurs : select natif */
+	select,
+	::picker(select) {
+		appearance: base-select;
+	}
+	select::picker-icon {
+		content: "▾";
+		margin-inline-start: auto;
+	}
+	::picker(select) {
+		margin-block: --spacing(2);
+		padding: --spacing(1.5);
+		background-color: var(--color-surface);
+		border: var(--default-border-width) solid var(--color-ink);
+		border-radius: var(--radius-chip);
+		box-shadow: var(--shadow-ink-3);
+	}
+	option {
+		padding: --spacing(2.5) --spacing(3);
+		border-radius: calc(var(--radius-chip) - 4px);
+		font-weight: var(--font-weight-bold);
+		&::checkmark { display: none; }
+		&:is(:hover, :focus-visible, :checked) { background-color: var(--color-neutral-200); }
 	}
 	/* champ invalide, seulement après interaction ou tentative de submit */
 	:is(input, textarea, select):user-invalid {

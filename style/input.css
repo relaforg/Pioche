@@ -198,7 +198,7 @@
 		font-size: 1.125rem;
 	}
 	/* champs texte uniquement : ni submit, ni radio/checkbox */
-	input:where(:not([type]), [type="text"], [type="email"], [type="password"], [type="search"], [type="tel"], [type="url"], [type="number"]), select {
+	input:where(:not([type]), [type="text"], [type="email"], [type="password"], [type="search"], [type="tel"], [type="url"], [type="number"], [type="date"]), select {
 		width: 100%;
 		padding: --spacing(3);
 		background-color: var(--color-neutral-200);

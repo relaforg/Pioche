@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 
-use crate::server::draws::{parse_name, MAX_PARTICIPANTS};
+use crate::server::participants::{parse_name, MAX_PARTICIPANTS};
 
 #[component]
 pub fn ParticipantsField(

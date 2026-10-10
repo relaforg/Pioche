@@ -3,7 +3,7 @@ use leptos_router::components::A;
 
 use crate::{
     server::auth::Logout,
-    server::session::{current_user, CurrentUser},
+    server::session::{current_user, UserDto},
     views::{colors::Color, components::button_link::ButtonLink},
 };
 
@@ -59,7 +59,7 @@ fn Logo() -> impl IntoView {
 }
 
 #[island]
-fn UserMenu(user: CurrentUser) -> impl IntoView {
+fn UserMenu(user: UserDto) -> impl IntoView {
     let (open, set_open) = signal(false);
     let logout = ServerAction::<Logout>::new();
 

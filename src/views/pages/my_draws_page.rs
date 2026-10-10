@@ -3,17 +3,18 @@ use leptos_router::components::{Redirect, A};
 
 use crate::{
     server::{
-        draws::{get_user_draw, Draw, DrawKind},
-        session::require_user,
+        draw_kind::DrawKindDto,
+        draws::{get_user_draw, DrawDto},
+        session::current_user,
     },
     views::colors::Color,
 };
 
 #[component]
 pub fn MyDrawsPage() -> impl IntoView {
-    let Ok(user) = require_user() else {
+    if current_user().is_none() {
         return view! { <Redirect path="/connexion" /> }.into_any();
-    };
+    }
 
     let draws = Resource::new(|| (), |_| get_user_draw());
 
@@ -56,10 +57,10 @@ pub fn MyDrawsPage() -> impl IntoView {
 }
 
 #[component]
-fn DrawView(draw: Draw) -> impl IntoView {
+fn DrawView(draw: DrawDto) -> impl IntoView {
     let (color, label) = match draw.kind {
-        DrawKind::SecretSanta => (Color::Raspberry, "Secret Santa"),
-        DrawKind::Teams => (Color::Blue, "Équipes"),
+        DrawKindDto::SecretSanta => (Color::Raspberry, "Secret Santa"),
+        DrawKindDto::Teams => (Color::Blue, "Équipes"),
     };
 
     view! {

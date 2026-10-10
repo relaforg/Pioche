@@ -2,10 +2,7 @@ use leptos::prelude::*;
 use leptos_router::components::Redirect;
 
 use crate::{
-    server::{
-        draws::{AddDraw, DrawKind},
-        session::current_user,
-    },
+    server::{draw_kind::DrawKindDto, draws::AddDraw, session::current_user},
     views::{
         colors::Color,
         components::{
@@ -46,7 +43,7 @@ pub fn CreateDrawPage() -> impl IntoView {
 #[island]
 fn FormView() -> impl IntoView {
     let add_draw = ServerAction::<AddDraw>::new();
-    let kind = RwSignal::new(DrawKind::SecretSanta);
+    let kind = RwSignal::new(DrawKindDto::SecretSanta);
     let participants = RwSignal::new(Vec::<String>::new());
     let dialog = NodeRef::<leptos::html::Dialog>::new();
 
@@ -60,7 +57,7 @@ fn FormView() -> impl IntoView {
         <ActionForm action=add_draw>
             <KindPicker kind />
 
-            <div class="bg-surface border shadow-butter-3 p-5 rounded-blob">
+            <div class="bg-surface border shadow-butter-5 p-5 rounded-blob">
                 <NameField kind />
 
                 <ParticipantsField participants dialog />
@@ -68,14 +65,13 @@ fn FormView() -> impl IntoView {
                 <hr class="border-dashed border-t-2 border-line my-7" />
                 <ExclusionsField participants />
                 {move || match kind.get() {
-                    DrawKind::SecretSanta => view! { <SecretSantaOption /> }.into_any(),
-                    DrawKind::Teams => view! { <TeamsOption /> }.into_any(),
+                    DrawKindDto::SecretSanta => view! { <SecretSantaOption /> }.into_any(),
+                    DrawKindDto::Teams => view! { <TeamsOption /> }.into_any(),
                 }}
             </div>
             <SubmitBar add_draw missing />
 
         </ActionForm>
         <PasteDialog dialog participants />
-
     }
 }

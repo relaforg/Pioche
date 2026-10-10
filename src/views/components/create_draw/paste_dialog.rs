@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 
-use crate::server::draws::parse_names;
+use crate::server::participants::parse_names;
 
 #[component]
 pub fn PasteDialog(

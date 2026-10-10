@@ -1,12 +1,12 @@
 use leptos::prelude::*;
 
-use crate::server::draws::DrawKind;
+use crate::server::draw_kind::DrawKindDto;
 
 #[component]
-pub fn NameField(kind: RwSignal<DrawKind>) -> impl IntoView {
+pub fn NameField(kind: RwSignal<DrawKindDto>) -> impl IntoView {
     let name_placeholder = move || match kind.get() {
-        DrawKind::SecretSanta => "Secret Santa - Bureau 2026",
-        DrawKind::Teams => "Foot de dimanche",
+        DrawKindDto::SecretSanta => "Secret Santa - Bureau 2026",
+        DrawKindDto::Teams => "Foot de dimanche",
     };
 
     view! {

@@ -21,7 +21,7 @@ use sha2::{Digest, Sha256};
 
 use crate::{
     entities::{sessions, users},
-    server::{error::AppError, session::CurrentUser},
+    server::{error::AppError, session::UserDto},
 };
 
 pub const COOKIE_NAME: &str = "pioche_session";
@@ -118,14 +118,14 @@ fn needs_refresh(expires_at: DateTimeWithTimeZone, now: DateTime<Utc>) -> bool {
     expires_at < now + SESSION_TTL - REFRESH_AFTER
 }
 
-async fn resolve(db: &DatabaseConnection, token: String) -> (Option<CurrentUser>, CookieAction) {
+async fn resolve(db: &DatabaseConnection, token: String) -> (Option<UserDto>, CookieAction) {
     let Some(hash) = hash_token(&token) else {
         return (None, CookieAction::Clear);
     };
 
     match find_session(db, hash).await {
         Ok(Some((session, Some(user)))) => {
-            let current_user = CurrentUser {
+            let current_user = UserDto {
                 id: user.id,
                 name: user.name,
                 email: user.email,

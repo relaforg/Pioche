@@ -3,7 +3,7 @@ use leptos_router::components::Redirect;
 
 use crate::{
     server::{
-        draws::{parse_name, parse_names, AddDraw, DrawKind, MAX_PARTICIPANTS},
+        draws::{parse_name, parse_names, AddDraw, DrawKind, Exclusion, MAX_PARTICIPANTS},
         session::current_user,
     },
     views::{colors::Color, components::button_link::ButtonLink},
@@ -37,19 +37,81 @@ fn FormView() -> impl IntoView {
     let add_draw = ServerAction::<AddDraw>::new();
     let kind = RwSignal::new(DrawKind::SecretSanta);
     let participants = RwSignal::new(Vec::<String>::new());
-    let draft = RwSignal::new(String::new());
-    let local_error = RwSignal::new(None::<String>);
+    let dialog = NodeRef::<leptos::html::Dialog>::new();
 
-    let server_error = move || add_draw.value().get().and_then(Result::err);
-    let count = move || participants.with(Vec::len);
-    let missing = move || kind.get().min_participants().saturating_sub(count());
+    let missing = Signal::derive(move || {
+        kind.get()
+            .min_participants()
+            .saturating_sub(participants.with(Vec::len))
+    });
 
+    view! {
+        <ActionForm action=add_draw>
+            <KindPicker kind />
+            <div class="bg-surface border shadow-butter-3 p-5 rounded-blob">
+                <NameField kind />
+                <ParticipantsField participants dialog />
+                <hr class="border-dashed border-t-2 border-line my-7" />
+                <ExclusionsField participants />
+            </div>
+            <SubmitBar add_draw missing />
+        </ActionForm>
+        <PasteDialog dialog participants />
+    }
+}
+
+#[component]
+fn KindPicker(kind: RwSignal<DrawKind>) -> impl IntoView {
+    view! {
+        <fieldset class="grid gap-5 sm:grid-cols-2 mb-7">
+            <legend class="sr-only">"Type de tirage"</legend>
+            <RadioCard
+                kind
+                value=DrawKind::SecretSanta
+                title="Secret Santa"
+                description="Chacun tire une personne à qui offrir, en secret."
+            />
+            <RadioCard
+                kind
+                value=DrawKind::Teams
+                title="Former des équipes"
+                description="Répartir un groupe en équipes équilibrées."
+            />
+        </fieldset>
+    }
+}
+
+#[component]
+fn NameField(kind: RwSignal<DrawKind>) -> impl IntoView {
     let name_placeholder = move || match kind.get() {
         DrawKind::SecretSanta => "Secret Santa - Bureau 2026",
         DrawKind::Teams => "Foot de dimanche",
     };
 
-    let try_add = move || -> Result<(), String> {
+    view! {
+        <label for="name">"Nom du tirage"</label>
+        <input
+            class="mt-2 mb-5"
+            id="name"
+            name="name"
+            type="text"
+            placeholder=name_placeholder
+            required
+        />
+    }
+}
+
+#[component]
+fn ParticipantsField(
+    participants: RwSignal<Vec<String>>,
+    dialog: NodeRef<leptos::html::Dialog>,
+) -> impl IntoView {
+    let draft = RwSignal::new(String::new());
+    let local_error = RwSignal::new(None::<String>);
+
+    let count = move || participants.with(Vec::len);
+
+    let try_add_participants = move || -> Result<(), String> {
         let name = draft.with(|d| parse_name(d)).map_err(|e| e.to_string())?;
         let key = name.to_lowercase();
 
@@ -63,186 +125,239 @@ fn FormView() -> impl IntoView {
         draft.set(String::new());
         Ok(())
     };
-    let add = move || local_error.set(try_add().err());
-
-    let dialog = NodeRef::<leptos::html::Dialog>::new();
-
-    let select_a = RwSignal::new(String::new());
-    let select_b = RwSignal::new(String::new());
-
-    let options_a = move || {
-        participants
-            .get()
-            .into_iter()
-            .map(|p| {
-                view! {
-                    <option value=p.clone() disabled=move || select_b.get() == p>
-                        {p.clone()}
-                    </option>
-                }
-            })
-            .collect_view()
-    };
-
-    let options_b = move || {
-        participants
-            .get()
-            .into_iter()
-            .map(|p| {
-                view! {
-                    <option value=p.clone() disabled=move || select_a.get() == p>
-                        {p.clone()}
-                    </option>
-                }
-            })
-            .collect_view()
-    };
+    let add_participant = move || local_error.set(try_add_participants().err());
 
     view! {
-        <ActionForm action=add_draw>
-            <fieldset class="grid gap-5 sm:grid-cols-2 mb-7">
-                <legend class="sr-only">"Type de tirage"</legend>
-                <RadioCard
-                    kind
-                    value=DrawKind::SecretSanta
-                    title="Secret Santa"
-                    description="Chacun tire une personne à qui offrir, en secret."
-                />
-                <RadioCard
-                    kind
-                    value=DrawKind::Teams
-                    title="Former des équipes"
-                    description="Répartir un groupe en équipes équilibrées."
-                />
-            </fieldset>
-            <div class="bg-surface border shadow-butter-3 p-5 rounded-blob">
-                <label for="name">"Nom du tirage"</label>
-                <input
-                    class="mt-2 mb-5"
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder=name_placeholder
-                    required
-                />
+        <div class="flex items-baseline gap-2">
+            <label for="participant-draft">"Participants"</label>
+            <span class="font-bold text-fg-soft">{count} " dans la liste"</span>
+        </div>
+        <ParticipantList participants />
+        <div class="flex gap-3">
+            <input
+                id="participant-draft"
+                type="text"
+                placeholder="Prénom puis Entrée"
+                class="flex-1"
+                bind:value=draft
+                on:input=move |_| local_error.set(None)
+                on:keydown=move |ev: leptos::ev::KeyboardEvent| {
+                    if ev.key() == "Enter" {
+                        ev.prevent_default();
+                        add_participant();
+                    }
+                }
+            />
+            <button
+                type="button"
+                class="cursor-pointer border rounded-full px-5 bg-raspberry-500 btn-press-ink"
+                on:click=move |_| add_participant()
+            >
+                "Ajouter"
+            </button>
+            <button
+                type="button"
+                class="cursor-pointer border rounded-full px-5 bg-surface btn-press-blue-500"
+                on:click=move |_| {
+                    if let Some(d) = dialog.get() {
+                        let _ = d.show_modal();
+                    }
+                }
+            >
+                "Coller une liste"
+            </button>
+        </div>
+        {move || {
+            local_error.get().map(|e| view! { <p class="mt-2 text-raspberry-500">{e}</p> })
+        }}
+    }
+}
 
-                <div class="flex items-baseline gap-2">
-                    <label for="participant-draft">"Participants"</label>
-                    <span class="font-bold text-fg-soft">{count} " dans la liste"</span>
-                </div>
-                <ul class="flex flex-wrap content-start gap-2 min-h-32 mt-2 mb-3 p-3 bg-neutral-200 border rounded-blob">
-                    {move || {
-                        participants
-                            .get()
-                            .into_iter()
-                            .enumerate()
-                            .map(|(i, name)| {
-                                view! {
-                                    <li class="flex items-center gap-2 h-fit px-3 py-1 bg-surface border rounded-full font-bold">
-                                        {name.clone()}
-                                        <input
-                                            type="hidden"
-                                            name=format!("participants[{i}]")
-                                            value=name.clone()
-                                        />
-                                        <button
-                                            type="button"
-                                            class="cursor-pointer text-raspberry-500"
-                                            aria-label=format!("Retirer {name}")
-                                            on:click=move |_| {
-                                                participants
-                                                    .update(|list| {
-                                                        list.remove(i);
-                                                    })
-                                            }
-                                        >
-                                            "x"
-                                        </button>
-                                    </li>
-                                }
-                            })
-                            .collect_view()
-                    }}
-                </ul>
-                <div class="flex gap-3">
-                    <input
-                        id="participant-draft"
-                        type="text"
-                        placeholder="Prénom puis Entrée"
-                        class="flex-1"
-                        bind:value=draft
-                        on:input=move |_| local_error.set(None)
-                        on:keydown=move |ev: leptos::ev::KeyboardEvent| {
-                            if ev.key() == "Enter" {
-                                ev.prevent_default();
-                                add();
-                            }
-                        }
-                    />
-                    <button
-                        type="button"
-                        class="cursor-pointer border rounded-full px-5 bg-raspberry-500 btn-press-ink"
-                        on:click=move |_| add()
-                    >
-                        "Ajouter"
-                    </button>
-                    <button
-                        type="button"
-                        class="cursor-pointer border rounded-full px-5 bg-surface btn-press-blue-500"
-                        on:click=move |_| {
-                            if let Some(d) = dialog.get() {
-                                let _ = d.show_modal();
-                            }
-                        }
-                    >
-                        "Coller une liste"
-                    </button>
-                </div>
-                {move || {
-                    local_error.get().map(|e| view! { <p class="mt-2 text-raspberry-500">{e}</p> })
-                }}
-                <hr class="border-dashed border-t-2 border-line my-7" />
-                <h3 class="font-semibold text-lg">
-                    "Exclusions — qui ne doit pas tomber ensemble"
-                </h3>
-                <p class="font-semibold text-fg-soft">
-                    "Pratique pour les couples, les colocs, ou ceux qui se sont déjà offert l'an dernier."
-                </p>
-                <div class="flex gap-3 my-5">
-                    <select bind:value=select_a class="flex-1">
-                        <option value="">"Choisir..."</option>
-                        {options_a}
-                    </select>
-                    <p class="font-display text-xl self-center">"x"</p>
-                    <select bind:value=select_b class="flex-1">
-                        <option value="">"Choisir..."</option>
-                        {options_b}
-                    </select>
-                    <button
-                        type="button"
-                        class="cursor-pointer border rounded-full px-5 bg-surface btn-press-blue-500"
-                    >
-                        "+ Exclure"
-                    </button>
-                </div>
-            </div>
-            <div class="flex flex-col items-center gap-2 my-7">
-                <input
-                    type="submit"
-                    value="Créer le tirage"
-                    class="cursor-pointer border rounded-full py-3 bg-raspberry-500 btn-press-ink font-display font-semibold w-full disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled=move || { missing() > 0 || add_draw.pending().get() }
-                />
-                <Show when=move || { missing() > 0 }>
-                    <p class="text-fg-soft">"Encore " {missing} " participant(s) minimum"</p>
-                </Show>
-            </div>
+#[component]
+fn ParticipantList(participants: RwSignal<Vec<String>>) -> impl IntoView {
+    view! {
+        <ul class="flex flex-wrap content-start gap-2 min-h-32 mt-2 mb-3 p-3 bg-neutral-200 border rounded-blob">
             {move || {
-                server_error()
-                    .map(|e| view! { <p class="text-center text-red-600">{e.to_string()}</p> })
+                participants
+                    .get()
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, name)| {
+                        view! {
+                            <li class="flex items-center gap-2 h-fit px-3 py-1 bg-surface border rounded-full font-bold">
+                                {name.clone()}
+                                <input
+                                    type="hidden"
+                                    name=format!("participants[{i}]")
+                                    value=name.clone()
+                                />
+                                <button
+                                    type="button"
+                                    class="cursor-pointer text-raspberry-500"
+                                    aria-label=format!("Retirer {name}")
+                                    on:click=move |_| {
+                                        participants
+                                            .update(|list| {
+                                                list.remove(i);
+                                            })
+                                    }
+                                >
+                                    "x"
+                                </button>
+                            </li>
+                        }
+                    })
+                    .collect_view()
             }}
-        </ActionForm>
-        <PasteDialog dialog participants />
+        </ul>
+    }
+}
+
+#[component]
+fn ExclusionsField(participants: RwSignal<Vec<String>>) -> impl IntoView {
+    let select_a = RwSignal::new(String::new());
+    let select_b = RwSignal::new(String::new());
+    let local_error = RwSignal::new(None::<String>);
+
+    let exclusions = RwSignal::new(Vec::<(String, String)>::new());
+    let try_add_exclusion = move || -> Result<(), String> {
+        let a = select_a.get();
+        let b = select_b.get();
+
+        if a.is_empty() || b.is_empty() {
+            return Err("Choisissez deux participants à séparer".into());
+        }
+        if a == b {
+            return Err("Choisissez deux participants différents".into());
+        }
+        if exclusions.with(|list| {
+            list.iter()
+                .any(|e| (e.0 == a && e.1 == b) || (e.0 == b && e.1 == a))
+        }) {
+            return Err(format!("'{a}' et '{b}' sont déjà exclus l'un de l'autre"));
+        }
+
+        exclusions.update(|list| list.push((a, b)));
+        Ok(())
+    };
+
+    let add_exclusion = move || local_error.set(try_add_exclusion().err());
+
+    view! {
+        <h3 class="font-semibold text-lg">"Exclusions — qui ne doit pas tomber ensemble"</h3>
+        <p class="font-semibold text-fg-soft">
+            "Pratique pour les couples, les colocs, ou ceux qui se sont déjà offert l'an dernier."
+        </p>
+        <div class="flex gap-3 my-5">
+            <select bind:value=select_a class="flex-1" on:change=move |_| local_error.set(None)>
+                <option value="">"Choisir..."</option>
+                <ParticipantOptions participants other=select_b />
+            </select>
+            <p class="font-display text-xl self-center">"x"</p>
+            <select bind:value=select_b class="flex-1" on:change=move |_| local_error.set(None)>
+                <option value="">"Choisir..."</option>
+                <ParticipantOptions participants other=select_a />
+            </select>
+            <button
+                type="button"
+                class="cursor-pointer border rounded-full px-5 bg-surface btn-press-blue-500"
+                on:click=move |_| add_exclusion()
+            >
+                "+ Exclure"
+            </button>
+        </div>
+        {move || {
+            local_error.get().map(|e| view! { <p class="mt-2 text-raspberry-500">{e}</p> })
+        }}
+        <ExclusionList exclusions />
+    }
+}
+
+#[component]
+fn ExclusionList(exclusions: RwSignal<Vec<(String, String)>>) -> impl IntoView {
+    view! {
+        <ul class="flex flex-wrap content-start gap-2 min-h-32 mt-2 mb-3">
+            {move || {
+                exclusions
+                    .get()
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, (a, b))| {
+                        view! {
+                            <li class="flex items-center gap-2 h-fit px-3 py-1 border rounded-full font-bold bg-butter-500 shadow-ink-3">
+                                {format!("{a} x {b}")}
+                                <input
+                                    type="hidden"
+                                    name=format!("exclusions[{i}][a]")
+                                    value=a.clone()
+                                />
+                                <input
+                                    type="hidden"
+                                    name=format!("exclusions[{i}][b]")
+                                    value=b.clone()
+                                />
+                                <button
+                                    type="button"
+                                    class="cursor-pointer text-raspberry-500"
+                                    aria-label=format!("Retirer {a} x {b}")
+                                    on:click=move |_| {
+                                        exclusions
+                                            .update(|list| {
+                                                list.remove(i);
+                                            })
+                                    }
+                                >
+                                    "x"
+                                </button>
+                            </li>
+                        }
+                    })
+                    .collect_view()
+            }}
+        </ul>
+    }
+}
+
+#[component]
+fn ParticipantOptions(
+    participants: RwSignal<Vec<String>>,
+    other: RwSignal<String>,
+) -> impl IntoView {
+    move || {
+        participants
+            .get()
+            .into_iter()
+            .map(|p| {
+                view! {
+                    <option value=p.clone() disabled=move || other.get() == p>
+                        {p.clone()}
+                    </option>
+                }
+            })
+            .collect_view()
+    }
+}
+
+#[component]
+fn SubmitBar(add_draw: ServerAction<AddDraw>, missing: Signal<usize>) -> impl IntoView {
+    let server_error = move || add_draw.value().get().and_then(Result::err);
+
+    view! {
+        <div class="flex flex-col items-center gap-2 my-7">
+            <input
+                type="submit"
+                value="Créer le tirage"
+                class="cursor-pointer border rounded-full py-3 bg-raspberry-500 btn-press-ink font-display font-semibold w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled=move || { missing.get() > 0 || add_draw.pending().get() }
+            />
+            <Show when=move || { missing.get() > 0 }>
+                <p class="text-fg-soft">"Encore " {missing} " participant(s) minimum"</p>
+            </Show>
+        </div>
+        {move || {
+            server_error()
+                .map(|e| view! { <p class="text-center text-red-600">{e.to_string()}</p> })
+        }}
     }
 }
 

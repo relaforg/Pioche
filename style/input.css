@@ -168,7 +168,7 @@
 		box-shadow: 3px 3px 0 var(--press);
 		transform: translate(2px, 2px);
 	}
-	&:focus {
+	&:active {
 		box-shadow: none;
 		transform: translate(5px, 5px);
 	}

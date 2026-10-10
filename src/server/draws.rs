@@ -73,7 +73,7 @@ impl Exclusion {
     pub fn new(couple: (String, String)) -> Result<Self, AppError> {
         if couple.0 == couple.1 {
             return Err(AppError::Invalid(
-                "Une exclusion ne peux pas contenir 2 fois la même personne".into(),
+                "Une exclusion doit concerner deux participants différents".into(),
             ));
         }
         Ok(Exclusion(couple))

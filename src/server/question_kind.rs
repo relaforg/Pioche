@@ -23,11 +23,11 @@ impl QuestionKindDto {
 
     pub fn form_value(self) -> &'static str {
         match self {
-            QuestionKindDto::ShoeSize => "shoe_size",
-            QuestionKindDto::Dislikes => "dislikes",
-            QuestionKindDto::TshirtSize => "tshirt_size",
-            QuestionKindDto::Allergies => "allergies",
-            QuestionKindDto::Wishes => "likes",
+            QuestionKindDto::ShoeSize => "ShoeSize",
+            QuestionKindDto::Dislikes => "Dislikes",
+            QuestionKindDto::TshirtSize => "TshirtSize",
+            QuestionKindDto::Allergies => "Allergies",
+            QuestionKindDto::Wishes => "Wishes",
         }
     }
 }

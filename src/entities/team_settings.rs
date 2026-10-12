@@ -11,9 +11,6 @@ pub struct Model {
     pub draw_id: i32,
     pub mode: TeamMode,
     pub value: i16,
-    pub has_captain: bool,
-    pub allow_unequal: bool,
-    pub allow_redraw: bool,
     #[sea_orm(
         belongs_to,
         from = "draw_id",

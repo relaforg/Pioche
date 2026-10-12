@@ -8,9 +8,6 @@ enum TeamSettings {
     DrawId,
     Mode,
     Value,
-    HasCaptain,
-    AllowUnequal,
-    AllowRedraw,
 }
 
 #[derive(DeriveIden)]
@@ -65,9 +62,6 @@ impl MigrationTrait for Migration {
                         [TeamMode::Size, TeamMode::Count],
                     ))
                     .col(small_integer(TeamSettings::Value))
-                    .col(boolean(TeamSettings::HasCaptain))
-                    .col(boolean(TeamSettings::AllowUnequal))
-                    .col(boolean(TeamSettings::AllowRedraw))
                     .check(Expr::col(TeamSettings::Value).gt(0))
                     .to_owned(),
             )

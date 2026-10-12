@@ -206,6 +206,15 @@
 		border-radius: var(--radius-pill);
 		font-weight: var(--font-weight-bold);
 	}
+	/* pas de flèches natives sur les champs nombre */
+	input[type="number"] {
+		appearance: textfield;
+		&::-webkit-inner-spin-button,
+		&::-webkit-outer-spin-button {
+			appearance: none;
+			margin: 0;
+		}
+	}
 	/* select personnalisable (Chrome/Edge 135+) ; ailleurs : select natif */
 	select,
 	::picker(select) {

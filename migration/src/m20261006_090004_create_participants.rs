@@ -11,7 +11,6 @@ enum Participants {
     AccessToken,
     FormCompletedAt,
     TeamId,
-    IsCaptain,
 }
 
 #[derive(DeriveIden)]
@@ -60,7 +59,6 @@ impl MigrationTrait for Migration {
                             .to(Teams::Table, Teams::Id)
                             .on_delete(ForeignKeyAction::SetNull),
                     )
-                    .col(boolean(Participants::IsCaptain).default(false).take())
                     .to_owned(),
             )
             .await?;
@@ -74,19 +72,6 @@ impl MigrationTrait for Migration {
                     .col(Participants::DrawId)
                     .col(Participants::Name)
                     .unique()
-                    .to_owned(),
-            )
-            .await?;
-
-        // Au plus un capitaine par équipe (index unique partiel)
-        manager
-            .create_index(
-                Index::create()
-                    .name("idx-participants-team_id-captain")
-                    .table(Participants::Table)
-                    .col(Participants::TeamId)
-                    .unique()
-                    .and_where(Expr::col(Participants::IsCaptain).eq(true))
                     .to_owned(),
             )
             .await

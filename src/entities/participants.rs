@@ -16,7 +16,6 @@ pub struct Model {
     pub access_token: Option<String>,
     pub form_completed_at: Option<DateTimeWithTimeZone>,
     pub team_id: Option<i32>,
-    pub is_captain: bool,
     #[sea_orm(has_many)]
     pub answers: HasMany<super::answers::Entity>,
     #[sea_orm(

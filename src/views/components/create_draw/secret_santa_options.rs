@@ -9,7 +9,16 @@ pub fn SecretSantaOption() -> impl IntoView {
         <div class="flex gap-5">
             <div class="flex-1">
                 <label for="budget">"Budget Cadeau"</label>
-                <input class="mt-2" id="budget" name="budget" type="text" required />
+                <input
+                    class="mt-2"
+                    id="budget"
+                    name="budget"
+                    type="number"
+                    placeholder="25 €"
+                    min=0
+                    step=0.01
+                    required
+                />
             </div>
             <div class="flex-1">
                 <label for="date">"Date de l'échange"</label>
@@ -22,12 +31,13 @@ pub fn SecretSantaOption() -> impl IntoView {
             </legend>
             <div class="flex flex-wrap gap-2 mt-2">
                 {QuestionKindDto::iter()
-                    .map(|q| {
+                    .enumerate()
+                    .map(|(i, q)| {
                         view! {
                             <label class="cursor-pointer px-4 py-2 border rounded-full text-sm bg-surface btn-press-blue-500 has-checked:bg-butter-500 has-checked:btn-press-ink has-checked:text-ink has-focus-visible:outline-2 has-focus-visible:outline-ink">
                                 <input
                                     class="sr-only"
-                                    name="question_kind"
+                                    name=format!("question_kind[{i}]")
                                     type="checkbox"
                                     value=q.form_value()
                                 />

@@ -43,7 +43,7 @@ pub fn CreateDrawPage() -> impl IntoView {
 #[island]
 fn FormView() -> impl IntoView {
     let add_draw = ServerAction::<AddDraw>::new();
-    let kind = RwSignal::new(DrawKindDto::Teams);
+    let kind = RwSignal::new(DrawKindDto::SecretSanta);
     let participants = RwSignal::new(Vec::<String>::new());
     let dialog = NodeRef::<leptos::html::Dialog>::new();
 

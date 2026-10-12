@@ -1,12 +1,14 @@
 use leptos::prelude::*;
 
+use crate::server::exclusions::ExclusionInput;
+
 #[component]
 pub fn ExclusionsField(participants: RwSignal<Vec<String>>) -> impl IntoView {
     let select_a = RwSignal::new(String::new());
     let select_b = RwSignal::new(String::new());
     let local_error = RwSignal::new(None::<String>);
 
-    let exclusions = RwSignal::new(Vec::<(String, String)>::new());
+    let exclusions = RwSignal::new(Vec::<ExclusionInput>::new());
     let try_add_exclusion = move || -> Result<(), String> {
         let a = select_a.get();
         let b = select_b.get();
@@ -19,12 +21,12 @@ pub fn ExclusionsField(participants: RwSignal<Vec<String>>) -> impl IntoView {
         }
         if exclusions.with(|list| {
             list.iter()
-                .any(|e| (e.0 == a && e.1 == b) || (e.0 == b && e.1 == a))
+                .any(|e| (e.a == a && e.b == b) || (e.a == b && e.b == a))
         }) {
             return Err(format!("'{a}' et '{b}' sont déjà exclus l'un de l'autre"));
         }
 
-        exclusions.update(|list| list.push((a, b)));
+        exclusions.update(|list| list.push(ExclusionInput { a, b }));
         Ok(())
     };
 
@@ -61,7 +63,7 @@ pub fn ExclusionsField(participants: RwSignal<Vec<String>>) -> impl IntoView {
 }
 
 #[component]
-fn ExclusionList(exclusions: RwSignal<Vec<(String, String)>>) -> impl IntoView {
+fn ExclusionList(exclusions: RwSignal<Vec<ExclusionInput>>) -> impl IntoView {
     view! {
         <ul class="flex flex-wrap content-start gap-2 mt-2 mb-3">
             {move || {
@@ -69,7 +71,7 @@ fn ExclusionList(exclusions: RwSignal<Vec<(String, String)>>) -> impl IntoView {
                     .get()
                     .into_iter()
                     .enumerate()
-                    .map(|(i, (a, b))| {
+                    .map(|(i, ExclusionInput { a, b })| {
                         view! {
                             <li class="flex items-center gap-2 h-fit px-3 py-1 border rounded-full font-bold bg-butter-500 shadow-ink-3">
                                 {format!("{a} x {b}")}

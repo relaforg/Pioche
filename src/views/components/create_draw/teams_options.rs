@@ -14,7 +14,7 @@ pub fn TeamsOption(participant_count: Signal<usize>) -> impl IntoView {
             <RadioField mode value=TeamModeDto::Size label="Taille des équipes" />
         </fieldset>
         <div class="flex items-center gap-4 mt-4">
-            <input type="range" min="2" prop:max=max prop:value=value on:input:target=move |ev| {
+            <input name="team_value" type="range" min="2" prop:max=max prop:value=value on:input:target=move |ev| {
                 if let Ok(v) = ev.target().value().parse::<usize>() {
                     value.set(v);
                 };

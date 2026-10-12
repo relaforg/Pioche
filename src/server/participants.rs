@@ -30,6 +30,11 @@ impl Participants {
     pub fn into_inner(self) -> Vec<String> {
         self.0
     }
+
+    pub fn position(&self, raw: &str) -> Option<usize> {
+        let key = normalize_participant(raw)?.to_lowercase();
+        self.0.iter().position(|n| n.to_lowercase() == key)
+    }
 }
 
 #[cfg(feature = "ssr")]

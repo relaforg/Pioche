@@ -1,8 +1,11 @@
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, NaiveDate};
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::server::{draw_kind::DrawKindDto, error::AppError, participants::ParticipantDto};
+use crate::server::{
+    draw_kind::DrawKindDto, error::AppError, exclusions::ExclusionInput,
+    participants::ParticipantDto, question_kind::QuestionKindDto, team_mode::TeamModeDto,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DrawDto {
@@ -21,6 +24,12 @@ pub async fn add_draw(
     name: String,
     kind: DrawKindDto,
     #[server(default)] participants: Vec<String>,
+    #[server(default)] exclusions: Vec<ExclusionInput>,
+    budget: Option<f64>,
+    date: Option<NaiveDate>,
+    question_kind: Option<Vec<QuestionKindDto>>,
+    team_mode: Option<TeamModeDto>,
+    team_value: Option<i16>,
 ) -> Result<i32, AppError> {
     // use crate::server::session::require_user;
     // use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, LoaderTrait, QueryFilter};

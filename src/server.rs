@@ -8,3 +8,5 @@ pub mod question_kind;
 pub mod session;
 #[cfg(feature = "ssr")]
 pub mod ssr;
+pub mod team_mode;
+

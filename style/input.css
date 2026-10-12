@@ -230,6 +230,41 @@
 		&::checkmark { display: none; }
 		&:is(:hover, :focus-visible, :checked) { background-color: var(--color-neutral-200); }
 	}
+	/* slider : l'input sert de piste, --fill (en %) règle la partie remplie */
+	input[type="range"] {
+		appearance: none;
+		width: 100%;
+		height: --spacing(4);
+		background:
+			linear-gradient(var(--color-blue-500), var(--color-blue-500)) 0 / var(--fill, 0%) 100% no-repeat,
+			var(--color-surface);
+		border: var(--default-border-width) solid var(--color-ink);
+		border-radius: var(--radius-pill);
+		cursor: grab;
+
+		/* webkit et moz ne peuvent pas partager un sélecteur : un pseudo inconnu invalide toute la règle */
+		&::-webkit-slider-thumb {
+			appearance: none;
+			width: --spacing(8);
+			height: --spacing(8);
+			background: var(--color-butter-500);
+			border: var(--default-border-width) solid var(--color-ink);
+			border-radius: 50%;
+			box-shadow: var(--shadow-ink-3);
+		}
+		&::-moz-range-thumb {
+			width: --spacing(8);
+			height: --spacing(8);
+			background: var(--color-butter-500);
+			border: var(--default-border-width) solid var(--color-ink);
+			border-radius: 50%;
+			box-shadow: var(--shadow-ink-3);
+		}
+		&:active::-webkit-slider-thumb { box-shadow: none; transform: translate(3px, 3px); }
+		&:active::-moz-range-thumb { box-shadow: none; transform: translate(3px, 3px); }
+		&:focus-visible::-webkit-slider-thumb { box-shadow: var(--shadow-ink-3), 0 0 0 4px var(--color-butter-300); }
+		&:focus-visible::-moz-range-thumb { box-shadow: var(--shadow-ink-3), 0 0 0 4px var(--color-butter-300); }
+	}
 	/* champ invalide, seulement après interaction ou tentative de submit */
 	:is(input, textarea, select):user-invalid {
 		border-color: var(--color-raspberry-600);

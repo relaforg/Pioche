@@ -43,7 +43,7 @@ pub fn CreateDrawPage() -> impl IntoView {
 #[island]
 fn FormView() -> impl IntoView {
     let add_draw = ServerAction::<AddDraw>::new();
-    let kind = RwSignal::new(DrawKindDto::SecretSanta);
+    let kind = RwSignal::new(DrawKindDto::Teams);
     let participants = RwSignal::new(Vec::<String>::new());
     let dialog = NodeRef::<leptos::html::Dialog>::new();
 
@@ -66,7 +66,14 @@ fn FormView() -> impl IntoView {
                 <ExclusionsField participants />
                 {move || match kind.get() {
                     DrawKindDto::SecretSanta => view! { <SecretSantaOption /> }.into_any(),
-                    DrawKindDto::Teams => view! { <TeamsOption /> }.into_any(),
+                    DrawKindDto::Teams => {
+                        view! {
+                            <TeamsOption participant_count=Signal::derive(move || {
+                                participants.get().len()
+                            }) />
+                        }
+                            .into_any()
+                    }
                 }}
             </div>
             <SubmitBar add_draw missing />

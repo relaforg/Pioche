@@ -1,10 +1,17 @@
 use chrono::{DateTime, FixedOffset, NaiveDate};
 use leptos::prelude::*;
+#[cfg(feature = "ssr")]
+use sea_orm::ConnectionTrait;
 use serde::{Deserialize, Serialize};
 
 use crate::server::{
-    draw_kind::DrawKindDto, error::AppError, exclusions::ExclusionInput,
-    participants::ParticipantDto, question_kind::QuestionKindDto, team_mode::TeamModeDto,
+    draw_kind::DrawKindDto,
+    error::AppError,
+    exclusions::{ExclusionInput, Exclusions},
+    participants::{ParticipantDto, Participants},
+    question_kind::QuestionKindDto,
+    secret_santa_option::SecretSantaOptions,
+    team_mode::TeamModeDto,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -31,13 +38,83 @@ pub async fn add_draw(
     team_mode: Option<TeamModeDto>,
     team_value: Option<i16>,
 ) -> Result<i32, AppError> {
-    // use crate::server::session::require_user;
-    // use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, LoaderTrait, QueryFilter};
-    //
-    // let user = require_user()?;
-    // let participants = Participants::parse(kind, participants)?;
-    // let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
-    Ok(23)
+    use crate::entities::{draws, exclusions, participants};
+    use crate::server::session::require_user;
+    use crate::server::ssr::session::generate_token;
+    use sea_orm::{
+        ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait,
+        LoaderTrait, QueryFilter, TransactionTrait,
+    };
+
+    let user = require_user()?;
+    let participants = Participants::parse(kind, participants)?;
+    let names = participants.into_inner();
+    let exclusions = Exclusions::parse(exclusions, &participants)?;
+    let (share_token, _) = generate_token();
+
+    let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
+
+    let txn = db.begin().await?;
+
+    let draw = draws::ActiveModel {
+        owner_id: Set(user.id),
+        kind: Set(kind.into()),
+        name: Set(name),
+        share_token: Set(Some(share_token)),
+        ..Default::default()
+    }
+    .insert(&txn)
+    .await?;
+
+    let participants =
+        participants::Entity::insert_many(names.iter().map(|p| participants::ActiveModel {
+            draw_id: Set(draw.id),
+            name: Set(p.into()),
+            ..Default::default()
+        }))
+        .exec_with_returning(&txn)
+        .await?;
+
+    let ids = names
+        .iter()
+        .map(|name| participants.iter().find(|p| p.name == *name).map(|m| m.id))
+        .collect::<Option<Vec<i32>>>()
+        .ok_or(AppError::Internal)?;
+
+    exclusions::Entity::insert_many(exclusions.into_active_models(&ids))
+        .exec(&txn)
+        .await?;
+
+    match kind {
+        DrawKindDto::SecretSanta => {
+            insert_secret_santa_options(&txn, draw.id, SecretSantaOptions::new(budget, date)?)
+                .await?
+        }
+        DrawKindDto::Teams => {
+            insert_teams_options(&txn, draw.id, SecretSantaOptions::new(budget, date)?).await?
+        }
+    };
+
+    txn.commit().await?;
+    Ok(draw.id)
+}
+
+#[cfg(feature = "ssr")]
+async fn insert_secret_santa_options(
+    txn: &impl ConnectionTrait,
+    draw_id: i32,
+    options: SecretSantaOptions,
+) -> Result<(), AppError> {
+    Ok(())
+}
+
+#[cfg(feature = "ssr")]
+async fn insert_teams_options(
+    txn: &impl ConnectionTrait,
+    draw_id: i32,
+    options: SecretSantaOptions,
+) -> Result<(), AppError> {
+    Ok(())
 }
 
 #[server]

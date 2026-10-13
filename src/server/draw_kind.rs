@@ -24,13 +24,22 @@ impl DrawKindDto {
 
 #[cfg(feature = "ssr")]
 mod convert {
-    use crate::{entities::sea_orm_active_enums, server::draw_kind::DrawKindDto};
+    use crate::{entities::sea_orm_active_enums::DrawKind, server::draw_kind::DrawKindDto};
 
-    impl From<sea_orm_active_enums::DrawKind> for DrawKindDto {
-        fn from(value: sea_orm_active_enums::DrawKind) -> Self {
+    impl From<DrawKind> for DrawKindDto {
+        fn from(value: DrawKind) -> Self {
             match value {
-                sea_orm_active_enums::DrawKind::SecretSanta => DrawKindDto::SecretSanta,
-                sea_orm_active_enums::DrawKind::Teams => DrawKindDto::Teams,
+                DrawKind::SecretSanta => DrawKindDto::SecretSanta,
+                DrawKind::Teams => DrawKindDto::Teams,
+            }
+        }
+    }
+
+    impl Into<DrawKind> for DrawKindDto {
+        fn into(self) -> DrawKind {
+            match self {
+                DrawKindDto::Teams => DrawKind::Teams,
+                DrawKindDto::SecretSanta => DrawKind::SecretSanta,
             }
         }
     }

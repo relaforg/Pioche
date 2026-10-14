@@ -5,7 +5,7 @@ use sea_orm::{ActiveModelTrait, ConnectionTrait};
 use serde::{Deserialize, Serialize};
 
 use crate::server::{
-    draw_kind::DrawKindDto, error::AppError, exclusions::ExclusionInput,
+    draw_kind::DrawKindDto, error::AppError, exclusions::ExclusionDto,
     participants::ParticipantDto, question_kind::QuestionKindDto, team_mode::TeamModeDto,
 };
 #[cfg(feature = "ssr")]
@@ -28,7 +28,7 @@ pub async fn add_draw(
     name: String,
     kind: DrawKindDto,
     #[server(default)] participants: Vec<String>,
-    #[server(default)] exclusions: Vec<ExclusionInput>,
+    #[server(default)] exclusions: Vec<ExclusionDto>,
     budget: Option<f64>,
     date: Option<NaiveDate>,
     question_kind: Option<Vec<QuestionKindDto>>,

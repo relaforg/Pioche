@@ -1,61 +1,70 @@
-use std::{cmp::Ordering, collections::BTreeSet};
-
 use serde::{Deserialize, Serialize};
 
-use crate::server::{error::AppError, participants::Participants};
-
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Exclusion {
-    a: usize,
-    b: usize,
-}
-
-impl Exclusion {
-    pub fn new(i: usize, j: usize) -> Option<Self> {
-        match i.cmp(&j) {
-            Ordering::Less => Some(Self { a: i, b: j }),
-            Ordering::Greater => Some(Self { a: j, b: i }),
-            Ordering::Equal => None,
-        }
-    }
-}
+#[cfg(feature = "ssr")]
+pub use domain::Exclusions;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ExclusionInput {
+pub struct ExclusionDto {
     pub a: String,
     pub b: String,
 }
 
-pub struct Exclusions(BTreeSet<Exclusion>);
+#[cfg(feature = "ssr")]
+mod domain {
+    use std::{cmp::Ordering, collections::BTreeSet};
 
-impl Exclusions {
-    pub fn parse(raw: Vec<ExclusionInput>, participants: &Participants) -> Result<Self, AppError> {
-        let mut set = BTreeSet::new();
+    use crate::server::{error::AppError, exclusions::ExclusionDto, participants::Participants};
 
-        for ExclusionInput { a, b } in raw {
-            let i = find(participants, &a)?;
-            let j = find(participants, &b)?;
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    pub struct Exclusion {
+        pub(super) a: usize,
+        pub(super) b: usize,
+    }
 
-            let exclusion = Exclusion::new(i, j).ok_or_else(|| {
-                AppError::Invalid(
-                    "Une exclusion doit concerner deux participants différents".into(),
-                )
-            })?;
-
-            if !set.insert(exclusion) {
-                return Err(AppError::Invalid(format!(
-                    "'{a}' et '{b}' sont déjà exclus l'un de l'autre"
-                )));
+    impl Exclusion {
+        pub fn new(i: usize, j: usize) -> Option<Self> {
+            match i.cmp(&j) {
+                Ordering::Less => Some(Self { a: i, b: j }),
+                Ordering::Greater => Some(Self { a: j, b: i }),
+                Ordering::Equal => None,
             }
         }
-        Ok(Exclusions(set))
     }
-}
 
-fn find(participants: &Participants, name: &str) -> Result<usize, AppError> {
-    participants.position(name).ok_or_else(|| {
-        AppError::Invalid(format!("'{name}' n'est pas dans la liste des participants"))
-    })
+    pub struct Exclusions(pub(super) BTreeSet<Exclusion>);
+
+    impl Exclusions {
+        pub fn parse(
+            raw: Vec<ExclusionDto>,
+            participants: &Participants,
+        ) -> Result<Self, AppError> {
+            let mut set = BTreeSet::new();
+
+            for ExclusionDto { a, b } in raw {
+                let i = find(participants, &a)?;
+                let j = find(participants, &b)?;
+
+                let exclusion = Exclusion::new(i, j).ok_or_else(|| {
+                    AppError::Invalid(
+                        "Une exclusion doit concerner deux participants différents".into(),
+                    )
+                })?;
+
+                if !set.insert(exclusion) {
+                    return Err(AppError::Invalid(format!(
+                        "'{a}' et '{b}' sont déjà exclus l'un de l'autre"
+                    )));
+                }
+            }
+            Ok(Exclusions(set))
+        }
+    }
+
+    fn find(participants: &Participants, name: &str) -> Result<usize, AppError> {
+        participants.position(name).ok_or_else(|| {
+            AppError::Invalid(format!("'{name}' n'est pas dans la liste des participants"))
+        })
+    }
 }
 
 #[cfg(feature = "ssr")]
@@ -64,7 +73,7 @@ mod convert {
 
     use crate::{
         entities::exclusions,
-        server::exclusions::{Exclusion, Exclusions},
+        server::exclusions::domain::{Exclusion, Exclusions},
     };
 
     impl Exclusions {

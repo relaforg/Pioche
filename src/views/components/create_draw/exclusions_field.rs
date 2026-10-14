@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 
-use crate::server::exclusions::ExclusionInput;
+use crate::server::exclusions::ExclusionDto;
 
 #[component]
 pub fn ExclusionsField(participants: RwSignal<Vec<String>>) -> impl IntoView {
@@ -8,7 +8,7 @@ pub fn ExclusionsField(participants: RwSignal<Vec<String>>) -> impl IntoView {
     let select_b = RwSignal::new(String::new());
     let local_error = RwSignal::new(None::<String>);
 
-    let exclusions = RwSignal::new(Vec::<ExclusionInput>::new());
+    let exclusions = RwSignal::new(Vec::<ExclusionDto>::new());
     let try_add_exclusion = move || -> Result<(), String> {
         let a = select_a.get();
         let b = select_b.get();
@@ -26,7 +26,7 @@ pub fn ExclusionsField(participants: RwSignal<Vec<String>>) -> impl IntoView {
             return Err(format!("'{a}' et '{b}' sont déjà exclus l'un de l'autre"));
         }
 
-        exclusions.update(|list| list.push(ExclusionInput { a, b }));
+        exclusions.update(|list| list.push(ExclusionDto { a, b }));
         Ok(())
     };
 
@@ -63,7 +63,7 @@ pub fn ExclusionsField(participants: RwSignal<Vec<String>>) -> impl IntoView {
 }
 
 #[component]
-fn ExclusionList(exclusions: RwSignal<Vec<ExclusionInput>>) -> impl IntoView {
+fn ExclusionList(exclusions: RwSignal<Vec<ExclusionDto>>) -> impl IntoView {
     view! {
         <ul class="flex flex-wrap content-start gap-2 mt-2 mb-3">
             {move || {
@@ -71,7 +71,7 @@ fn ExclusionList(exclusions: RwSignal<Vec<ExclusionInput>>) -> impl IntoView {
                     .get()
                     .into_iter()
                     .enumerate()
-                    .map(|(i, ExclusionInput { a, b })| {
+                    .map(|(i, ExclusionDto { a, b })| {
                         view! {
                             <li class="flex items-center gap-2 h-fit px-3 py-1 border rounded-full font-bold bg-butter-500 shadow-ink-3">
                                 {format!("{a} x {b}")}

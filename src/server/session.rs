@@ -14,10 +14,7 @@ pub fn current_user() -> Option<UserDto> {
     use axum::http::request::Parts;
     use leptos::context::use_context;
 
-    use_context::<Parts>()?
-        .extensions
-        .get::<UserDto>()
-        .cloned()
+    use_context::<Parts>()?.extensions.get::<UserDto>().cloned()
 }
 
 #[cfg(not(feature = "ssr"))]

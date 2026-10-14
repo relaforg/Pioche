@@ -11,7 +11,7 @@ pub struct Exclusion {
 }
 
 impl Exclusion {
-    fn new(i: usize, j: usize) -> Option<Self> {
+    pub fn new(i: usize, j: usize) -> Option<Self> {
         match i.cmp(&j) {
             Ordering::Less => Some(Self { a: i, b: j }),
             Ordering::Greater => Some(Self { a: j, b: i }),

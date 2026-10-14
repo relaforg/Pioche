@@ -16,6 +16,8 @@ services:
 
   app-dev:
     profiles: ["dev"]
+    tty: true
+    container_name: "dev"
     build: { context: ., target: dev }
     depends_on:
       db:
@@ -34,6 +36,7 @@ services:
 
   app-prod:
     profiles: ["prod"]
+    container_name: "prod"
     build: { context: ., target: prod }
     depends_on:
       db:

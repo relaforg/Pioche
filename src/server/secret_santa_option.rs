@@ -5,8 +5,8 @@ use crate::server::error::AppError;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SecretSantaOptions {
-    budget_cents: Option<i32>,
-    exchange_date: Option<NaiveDate>,
+    pub budget_cents: Option<i32>,
+    pub exchange_date: Option<NaiveDate>,
 }
 
 impl SecretSantaOptions {

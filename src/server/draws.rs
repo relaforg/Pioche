@@ -1,18 +1,15 @@
 use chrono::{DateTime, FixedOffset, NaiveDate};
 use leptos::prelude::*;
 #[cfg(feature = "ssr")]
-use sea_orm::ConnectionTrait;
+use sea_orm::{ActiveModelTrait, ConnectionTrait};
 use serde::{Deserialize, Serialize};
 
 use crate::server::{
-    draw_kind::DrawKindDto,
-    error::AppError,
-    exclusions::{ExclusionInput, Exclusions},
-    participants::{ParticipantDto, Participants},
-    question_kind::QuestionKindDto,
-    secret_santa_option::SecretSantaOptions,
-    team_mode::TeamModeDto,
+    draw_kind::DrawKindDto, error::AppError, exclusions::ExclusionInput,
+    participants::ParticipantDto, question_kind::QuestionKindDto, team_mode::TeamModeDto,
 };
+#[cfg(feature = "ssr")]
+use crate::server::{secret_santa_option::SecretSantaOptions, teams_options::TeamOptions};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DrawDto {
@@ -38,18 +35,22 @@ pub async fn add_draw(
     team_mode: Option<TeamModeDto>,
     team_value: Option<i16>,
 ) -> Result<i32, AppError> {
-    use crate::entities::{draws, exclusions, participants};
+    use crate::entities::{draw_questions, draws, exclusions, participants};
     use crate::server::session::require_user;
     use crate::server::ssr::session::generate_token;
+    use crate::server::{
+        exclusions::Exclusions, participants::Participants,
+        secret_santa_option::SecretSantaOptions, teams_options::TeamOptions,
+    };
+    use leptos_axum::redirect;
     use sea_orm::{
-        ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait,
-        LoaderTrait, QueryFilter, TransactionTrait,
+        ActiveModelTrait, ActiveValue::Set, DatabaseConnection, EntityTrait, TransactionTrait,
     };
 
     let user = require_user()?;
     let participants = Participants::parse(kind, participants)?;
-    let names = participants.into_inner();
     let exclusions = Exclusions::parse(exclusions, &participants)?;
+    let names = participants.into_inner();
     let (share_token, _) = generate_token();
 
     let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
@@ -88,14 +89,30 @@ pub async fn add_draw(
     match kind {
         DrawKindDto::SecretSanta => {
             insert_secret_santa_options(&txn, draw.id, SecretSantaOptions::new(budget, date)?)
-                .await?
+                .await?;
+            let questions: Vec<draw_questions::ActiveModel> = question_kind
+                .map(|questions| {
+                    questions
+                        .into_iter()
+                        .map(|q| draw_questions::ActiveModel {
+                            draw_id: Set(draw.id),
+                            question: Set(q.into()),
+                            ..Default::default()
+                        })
+                        .collect()
+                })
+                .ok_or_else(|| AppError::Invalid("Aucune question selectionnée".into()))?;
+            draw_questions::Entity::insert_many(questions)
+                .exec(&txn)
+                .await?;
         }
         DrawKindDto::Teams => {
-            insert_teams_options(&txn, draw.id, SecretSantaOptions::new(budget, date)?).await?
+            insert_teams_options(&txn, draw.id, TeamOptions::new(team_mode, team_value)?).await?
         }
     };
 
     txn.commit().await?;
+    redirect(format!("/tirage/{}", draw.id).as_str());
     Ok(draw.id)
 }
 
@@ -105,6 +122,18 @@ async fn insert_secret_santa_options(
     draw_id: i32,
     options: SecretSantaOptions,
 ) -> Result<(), AppError> {
+    use crate::entities::santa_settings;
+    use sea_orm::ActiveValue::Set;
+
+    santa_settings::ActiveModel {
+        draw_id: Set(draw_id),
+        budget_cents: Set(options.budget_cents),
+        exchange_date: Set(options.exchange_date),
+        ..Default::default()
+    }
+    .insert(txn)
+    .await?;
+
     Ok(())
 }
 
@@ -112,8 +141,20 @@ async fn insert_secret_santa_options(
 async fn insert_teams_options(
     txn: &impl ConnectionTrait,
     draw_id: i32,
-    options: SecretSantaOptions,
+    options: TeamOptions,
 ) -> Result<(), AppError> {
+    use crate::entities::team_settings;
+    use sea_orm::ActiveValue::Set;
+
+    team_settings::ActiveModel {
+        draw_id: Set(draw_id),
+        mode: Set(options.team_mode.into()),
+        value: Set(options.team_value),
+        ..Default::default()
+    }
+    .insert(txn)
+    .await?;
+
     Ok(())
 }
 

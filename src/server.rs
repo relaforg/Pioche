@@ -10,3 +10,5 @@ pub mod session;
 #[cfg(feature = "ssr")]
 pub mod ssr;
 pub mod team_mode;
+pub mod teams_options;
+

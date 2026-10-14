@@ -27,4 +27,13 @@ mod convert {
             }
         }
     }
+
+    impl Into<TeamMode> for TeamModeDto {
+        fn into(self) -> TeamMode {
+            match self {
+                TeamModeDto::Count => TeamMode::Count,
+                TeamModeDto::Size => TeamMode::Size,
+            }
+        }
+    }
 }

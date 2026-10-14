@@ -64,7 +64,7 @@ fn DrawView(draw: DrawDto) -> impl IntoView {
     };
 
     view! {
-        <A href="">
+        <A href=format!("/tirage/{}", draw.id)>
             <div class=format!(
                 "h-50 w-full border border-line rounded-blob cursor-pointer bg-surface {} overflow-hidden flex flex-col",
                 color.btn_press(),

@@ -49,4 +49,16 @@ mod ssr {
             }
         }
     }
+
+    impl Into<QuestionKind> for QuestionKindDto {
+        fn into(self) -> QuestionKind {
+            match self {
+                QuestionKindDto::ShoeSize => QuestionKind::ShoeSize,
+                QuestionKindDto::TshirtSize => QuestionKind::TshirtSize,
+                QuestionKindDto::Dislikes => QuestionKind::Dislikes,
+                QuestionKindDto::Wishes => QuestionKind::Wishes,
+                QuestionKindDto::Allergies => QuestionKind::Allergies,
+            }
+        }
+    }
 }

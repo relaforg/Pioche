@@ -14,6 +14,7 @@ pub struct Model {
     pub name: String,
     #[sea_orm(unique)]
     pub access_token: Option<String>,
+    pub email: Option<String>,
     pub form_completed_at: Option<DateTimeWithTimeZone>,
     pub team_id: Option<i32>,
     #[sea_orm(has_many)]

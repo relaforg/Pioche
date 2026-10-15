@@ -12,21 +12,7 @@ pub fn ParticipantsField(
 
     let count = move || participants.with(Vec::len);
 
-    let try_add_participants = move || -> Result<(), String> {
-        let name = draft.with(|d| parse_name(d)).map_err(|e| e.to_string())?;
-        let key = name.to_lowercase();
-
-        if participants.with(|list| list.iter().any(|p| p.to_lowercase() == key)) {
-            return Err(format!("'{name}' est déjà dans la liste"));
-        }
-        if count() >= MAX_PARTICIPANTS {
-            return Err(format!("{MAX_PARTICIPANTS} participants maximum"));
-        }
-        participants.update(|list| list.push(name));
-        draft.set(String::new());
-        Ok(())
-    };
-    let add_participant = move || local_error.set(try_add_participants().err());
+    let add_participant = move || local_error.set(try_add_participant(participants, draft).err());
 
     view! {
         <div class="flex items-baseline gap-2">
@@ -74,8 +60,27 @@ pub fn ParticipantsField(
     }
 }
 
+/// Valide `draft`, l'ajoute à `participants` puis vide le brouillon.
+pub fn try_add_participant(
+    participants: RwSignal<Vec<String>>,
+    draft: RwSignal<String>,
+) -> Result<(), String> {
+    let name = draft.with(|d| parse_name(d)).map_err(|e| e.to_string())?;
+    let key = name.to_lowercase();
+
+    if participants.with(|list| list.iter().any(|p| p.to_lowercase() == key)) {
+        return Err(format!("'{name}' est déjà dans la liste"));
+    }
+    if participants.with(Vec::len) >= MAX_PARTICIPANTS {
+        return Err(format!("{MAX_PARTICIPANTS} participants maximum"));
+    }
+    participants.update(|list| list.push(name));
+    draft.set(String::new());
+    Ok(())
+}
+
 #[component]
-fn ParticipantList(participants: RwSignal<Vec<String>>) -> impl IntoView {
+pub fn ParticipantList(participants: RwSignal<Vec<String>>) -> impl IntoView {
     view! {
         <ul class="flex flex-wrap content-start gap-2 min-h-32 mt-2 mb-3 p-3 bg-neutral-200 border rounded-blob">
             {move || {

@@ -1,12 +1,39 @@
 use leptos::prelude::*;
 
-use crate::server::team_mode::TeamModeDto;
+use crate::server::{team_mode::TeamModeDto, teams_options::TeamOptions};
+
+/// Répartition (nombre d'équipes, taille min, taille max) pour `n` participants.
+pub fn team_split(n: usize, mode: TeamModeDto, value: usize) -> Option<(usize, usize, usize)> {
+    if n == 0 || value == 0 {
+        return None;
+    }
+    let count = match mode {
+        TeamModeDto::Count => value.min(n),
+        TeamModeDto::Size => (n / value).max(1),
+    };
+    Some((count, n / count, n.div_ceil(count)))
+}
 
 #[component]
-pub fn TeamsOption(participant_count: Signal<usize>) -> impl IntoView {
-    let mode = RwSignal::new(TeamModeDto::Count);
+pub fn TeamsOption(
+    participant_count: Signal<usize>,
+    #[prop(optional)] initial: Option<TeamOptions>,
+) -> impl IntoView {
+    let (initial_mode, initial_value) = initial
+        .map(|o| (o.team_mode, o.team_value as usize))
+        .unwrap_or((TeamModeDto::Count, 2));
+    let mode = RwSignal::new(initial_mode);
     let max = move || (participant_count.get() / 2).max(2);
-    let value = RwSignal::new(2);
+    let value = RwSignal::new(initial_value);
+    let summary = move || {
+        team_split(participant_count.get(), mode.get(), value.get()).map(|(count, min, max)| {
+            if min == max {
+                format!("Soit {count} équipes de {min}.")
+            } else {
+                format!("Soit {count} équipes de {min} à {max}.")
+            }
+        })
+    };
     view! {
         <h3 class="font-semibold text-lg">"Je définis..."</h3>
         <fieldset class="grid gap-5 sm:grid-cols-2 my-2">
@@ -14,15 +41,22 @@ pub fn TeamsOption(participant_count: Signal<usize>) -> impl IntoView {
             <RadioField mode value=TeamModeDto::Size label="Taille des équipes" />
         </fieldset>
         <div class="flex items-center gap-4 mt-4">
-            <input name="team_value" type="range" min="2" prop:max=max prop:value=value on:input:target=move |ev| {
-                if let Ok(v) = ev.target().value().parse::<usize>() {
-                    value.set(v);
-                };
-            } style:--fill=move || format!("{}%", ((value.get() - 2) * 100).checked_div(max() - 2).unwrap_or(5)) />
+            <div class="flex-1">
+                <input name="team_value" type="range" min="2" prop:max=max prop:value=value on:input:target=move |ev| {
+                    if let Ok(v) = ev.target().value().parse::<usize>() {
+                        value.set(v);
+                    };
+                } style:--fill=move || format!("{}%", ((value.get() - 2) * 100).checked_div(max() - 2).unwrap_or(5)) />
+                <div class="flex justify-between mt-1 text-sm font-bold">
+                    <span>"2"</span>
+                    <span>{max}</span>
+                </div>
+            </div>
             <output class="grid place-items-center size-14 rounded-chip bg-butter-500 border shadow-ink-3 font-display font-bold text-2xl">
                 {value}
             </output>
         </div>
+        // <p class="mt-2 text-fg-soft">{summary}</p>
     }
 }
 

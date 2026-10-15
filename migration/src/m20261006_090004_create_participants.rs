@@ -11,6 +11,7 @@ enum Participants {
     AccessToken,
     FormCompletedAt,
     TeamId,
+    Email,
 }
 
 #[derive(DeriveIden)]
@@ -50,6 +51,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(string(Participants::Name))
                     .col(string_null(Participants::AccessToken).unique_key().take())
+                    .col(string_null(Participants::Email))
                     .col(timestamp_with_time_zone_null(Participants::FormCompletedAt))
                     .col(integer_null(Participants::TeamId))
                     .foreign_key(

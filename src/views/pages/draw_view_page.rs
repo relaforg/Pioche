@@ -3,9 +3,10 @@ use leptos::Params;
 use leptos_router::{components::Redirect, hooks::use_params, params::Params};
 
 use crate::server::draws::get_draw_by_id;
-use crate::server::draws::DrawDetailDto;
+use crate::server::draws::{DrawDetailDto, DrawSettingsDto};
 use crate::server::error::AppError;
 use crate::server::session::require_user;
+use crate::views::components::draw_view::{secret_santa::SecretSantaDraw, teams::TeamsDraw};
 
 #[derive(Params, PartialEq, Clone)]
 struct DrawParams {
@@ -44,5 +45,21 @@ fn DrawView(draw: DrawDetailDto) -> impl IntoView {
     if user.id != draw.owner_id {
         return view! { <Redirect path="/mes-tirages" /> }.into_any();
     }
-    view! { <p>{draw.name}</p> }.into_any()
+
+    match draw.settings {
+        DrawSettingsDto::Teams { options, teams } => view! {
+            <TeamsDraw
+                name=draw.name
+                share_token=draw.share_token
+                participants=draw.participants
+                options
+                teams
+            />
+        }
+        .into_any(),
+        DrawSettingsDto::SecretSanta { options, .. } => {
+            view! { <SecretSantaDraw name=draw.name participants=draw.participants options /> }
+                .into_any()
+        }
+    }
 }

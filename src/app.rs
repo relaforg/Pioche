@@ -3,8 +3,8 @@ use crate::views::{
         footer::Footer, header::Header, login_form::LoginForm, register_form::RegisterForm,
     },
     pages::{
-        auth_page::AuthPage, create_draw_page::CreateDrawPage, home_page::HomePage,
-        how_it_works_page::HowItWorksPage, my_draws_page::MyDrawsPage,
+        auth_page::AuthPage, create_draw_page::CreateDrawPage, draw_view_page::DrawViewPage,
+        home_page::HomePage, how_it_works_page::HowItWorksPage, my_draws_page::MyDrawsPage,
     },
 };
 use leptos::prelude::*;
@@ -55,6 +55,7 @@ pub fn App() -> impl IntoView {
                         </ParentRoute>
                         <Route path=path!("/mes-tirages") view=MyDrawsPage />
                         <Route path=path!("/creer-un-tirage") view=CreateDrawPage />
+                        <Route path=path!("/tirage/:id") view=DrawViewPage />
                     </Routes>
                 </main>
             </Router>

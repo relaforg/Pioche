@@ -47,3 +47,17 @@ fn parse_date(date: NaiveDate) -> Result<NaiveDate, AppError> {
 
     Ok(date)
 }
+
+#[cfg(feature = "ssr")]
+mod convert {
+    use crate::{entities::santa_settings, server::secret_santa_option::SecretSantaOptions};
+
+    impl From<santa_settings::Model> for SecretSantaOptions {
+        fn from(value: santa_settings::Model) -> Self {
+            Self {
+                budget_cents: value.budget_cents,
+                exchange_date: value.exchange_date,
+            }
+        }
+    }
+}

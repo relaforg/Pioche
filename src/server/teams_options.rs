@@ -35,3 +35,17 @@ fn parse_team_value(team_value: i16) -> Result<i16, AppError> {
 
     Ok(team_value)
 }
+
+#[cfg(feature = "ssr")]
+mod convert {
+    use crate::{entities::team_settings, server::teams_options::TeamOptions};
+
+    impl From<team_settings::Model> for TeamOptions {
+        fn from(value: team_settings::Model) -> Self {
+            Self {
+                team_mode: value.mode.into(),
+                team_value: value.value,
+            }
+        }
+    }
+}

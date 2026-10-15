@@ -6,7 +6,7 @@ use crate::views::colors::Color;
 use crate::views::components::{
     card::Card,
     draw_view::{
-        header::{BackButton, DrawHeader},
+        header::{BackButton, DeleteDrawButton, DrawHeader},
         ACCENT_COLORS,
     },
 };
@@ -42,8 +42,9 @@ pub fn SecretSantaDraw(
 
     view! {
         <div class="flex flex-col gap-8">
-            <DrawHeader name subtitle color=Color::Raspberry>
+            <DrawHeader name=name.clone() subtitle color=Color::Raspberry>
                 <BackButton />
+                <DeleteDrawButton draw_name=name />
             </DrawHeader>
             <PersonalLinks missing_emails=participant_count />
             <div>

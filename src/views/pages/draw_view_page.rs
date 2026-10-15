@@ -54,6 +54,7 @@ fn DrawView(draw: DrawDetailDto) -> impl IntoView {
                 participants=draw.participants
                 options
                 teams
+                draw_id=draw.id
             />
         }
         .into_any(),

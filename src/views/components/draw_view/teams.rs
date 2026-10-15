@@ -2,6 +2,7 @@ use leptos::prelude::*;
 
 use crate::server::draws::TeamDto;
 use crate::server::participants::ParticipantDto;
+use crate::server::teams_draw::UpdateAndDrawTeams;
 use crate::server::teams_options::TeamOptions;
 use crate::views::colors::Color;
 use crate::views::components::{
@@ -11,7 +12,7 @@ use crate::views::components::{
         teams_options::{team_split, TeamsOption},
     },
     draw_view::{
-        header::{BackButton, DrawHeader},
+        header::{BackButton, DeleteDrawButton, DrawHeader},
         ACCENT_COLORS,
     },
 };
@@ -25,6 +26,7 @@ pub fn TeamsDraw(
     participants: Vec<ParticipantDto>,
     options: TeamOptions,
     teams: Vec<TeamDto>,
+    draw_id: i32,
 ) -> impl IntoView {
     let participant_count = participants.len();
     let subtitle = format!(
@@ -35,18 +37,13 @@ pub fn TeamsDraw(
 
     view! {
         <div class="flex flex-col gap-8">
-            <DrawHeader name subtitle=subtitle.clone() color=Color::Blue>
+            <DrawHeader name=name.clone() subtitle=subtitle.clone() color=Color::Blue>
                 <BackButton />
-                <button
-                    type="button"
-                    class="cursor-pointer border rounded-full py-2 px-4 bg-butter-500 btn-press-ink"
-                >
-                    "Retirer au sort"
-                </button>
+                <DeleteDrawButton draw_name=name />
             </DrawHeader>
             {share_token.map(|token| view! { <ShareLink token /> })}
             <div class="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] items-start">
-                <TeamsSettings participants=names options />
+                <TeamsSettings participants=names options draw_id />
                 <TeamsResult teams subtitle />
             </div>
         </div>
@@ -94,43 +91,48 @@ fn ShareLink(token: String) -> impl IntoView {
 }
 
 #[island]
-fn TeamsSettings(participants: Vec<String>, options: TeamOptions) -> impl IntoView {
+fn TeamsSettings(participants: Vec<String>, options: TeamOptions, draw_id: i32) -> impl IntoView {
     let participants = RwSignal::new(participants);
     let draft = RwSignal::new(String::new());
     let local_error = RwSignal::new(None::<String>);
     let count = move || participants.with(Vec::len);
 
+    let update_and_draw_team = ServerAction::<UpdateAndDrawTeams>::new();
+
     view! {
-        <Card bg_color=Color::Surface shadow_color=Color::Blue>
-            <h3 class="text-2xl mb-4">"Réglages du tirage"</h3>
-            <label for="participant-draft">"Participants (" {count} ")"</label>
-            <ParticipantList participants />
-            <input
-                id="participant-draft"
-                type="text"
-                placeholder="Ajouter un nom puis Entrée"
-                bind:value=draft
-                on:input=move |_| local_error.set(None)
-                on:keydown=move |ev: leptos::ev::KeyboardEvent| {
-                    if ev.key() == "Enter" {
-                        ev.prevent_default();
-                        local_error.set(try_add_participant(participants, draft).err());
+        <ActionForm action=update_and_draw_team>
+            <Card bg_color=Color::Surface shadow_color=Color::Blue>
+                <input type="hidden" name="draw_id" value=draw_id />
+                <h3 class="text-2xl mb-4">"Réglages du tirage"</h3>
+                <label for="participant-draft">"Participants (" {count} ")"</label>
+                <ParticipantList participants />
+                <input
+                    id="participant-draft"
+                    type="text"
+                    placeholder="Ajouter un nom puis Entrée"
+                    bind:value=draft
+                    on:input=move |_| local_error.set(None)
+                    on:keydown=move |ev: leptos::ev::KeyboardEvent| {
+                        if ev.key() == "Enter" {
+                            ev.prevent_default();
+                            local_error.set(try_add_participant(participants, draft).err());
+                        }
                     }
-                }
-            />
-            {move || {
-                local_error.get().map(|e| view! { <p class="mt-2 text-raspberry-500">{e}</p> })
-            }}
-            <div class="mt-6">
-                <TeamsOption participant_count=Signal::derive(count) initial=options />
-            </div>
-            <button
-                type="button"
-                class="mt-6 w-full cursor-pointer border rounded-full py-3 bg-raspberry-500 btn-press-ink"
-            >
-                "Mélanger !"
-            </button>
-        </Card>
+                />
+                {move || {
+                    local_error.get().map(|e| view! { <p class="mt-2 text-raspberry-500">{e}</p> })
+                }}
+                <div class="mt-6">
+                    <TeamsOption participant_count=Signal::derive(count) initial=options />
+                </div>
+                <button
+                    type="submit"
+                    class="mt-6 w-full cursor-pointer border rounded-full py-3 bg-raspberry-500 btn-press-ink"
+                >
+                    "Mélanger !"
+                </button>
+            </Card>
+        </ActionForm>
     }
 }
 

@@ -1,6 +1,7 @@
 use leptos::prelude::*;
 
 use crate::server::draws::TeamDto;
+use crate::server::exclusions::ExclusionDto;
 use crate::server::participants::ParticipantDto;
 use crate::server::teams_draw::UpdateAndDrawTeams;
 use crate::server::teams_options::TeamOptions;
@@ -8,6 +9,7 @@ use crate::views::colors::Color;
 use crate::views::components::{
     card::Card,
     create_draw::{
+        exclusions_field::ExclusionsField,
         participants_field::{try_add_participant, ParticipantList},
         teams_options::{team_split, TeamsOption},
     },
@@ -24,6 +26,7 @@ pub fn TeamsDraw(
     name: String,
     share_token: Option<String>,
     participants: Vec<ParticipantDto>,
+    exclusions: Vec<ExclusionDto>,
     options: TeamOptions,
     teams: Vec<TeamDto>,
     draw_id: i32,
@@ -43,7 +46,7 @@ pub fn TeamsDraw(
             </DrawHeader>
             {share_token.map(|token| view! { <ShareLink token /> })}
             <div class="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] items-start">
-                <TeamsSettings participants=names options draw_id />
+                <TeamsSettings participants=names exclusions options draw_id />
                 <TeamsResult teams subtitle />
             </div>
         </div>
@@ -91,7 +94,12 @@ fn ShareLink(token: String) -> impl IntoView {
 }
 
 #[island]
-fn TeamsSettings(participants: Vec<String>, options: TeamOptions, draw_id: i32) -> impl IntoView {
+fn TeamsSettings(
+    participants: Vec<String>,
+    exclusions: Vec<ExclusionDto>,
+    options: TeamOptions,
+    draw_id: i32,
+) -> impl IntoView {
     let participants = RwSignal::new(participants);
     let draft = RwSignal::new(String::new());
     let local_error = RwSignal::new(None::<String>);
@@ -122,6 +130,8 @@ fn TeamsSettings(participants: Vec<String>, options: TeamOptions, draw_id: i32) 
                 {move || {
                     local_error.get().map(|e| view! { <p class="mt-2 text-raspberry-500">{e}</p> })
                 }}
+                <hr class="border-dashed border-t-2 border-line my-7" />
+                <ExclusionsField participants initial=exclusions />
                 <div class="mt-6">
                     <TeamsOption participant_count=Signal::derive(count) initial=options />
                 </div>

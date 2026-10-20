@@ -69,6 +69,8 @@ mod domain {
 
 #[cfg(feature = "ssr")]
 mod convert {
+    use std::collections::BTreeSet;
+
     use sea_orm::ActiveValue::Set;
 
     use crate::{
@@ -89,6 +91,13 @@ mod convert {
                     }
                 })
                 .collect()
+        }
+
+        pub fn into_id_pairs(self, ids: &[i32]) -> BTreeSet<(i32, i32)> {
+            self.0
+                .into_iter()
+                .map(|Exclusion { a, b }| (ids[a].min(ids[b]), ids[b].max(ids[a])))
+                .collect::<BTreeSet<(i32, i32)>>()
         }
     }
 }

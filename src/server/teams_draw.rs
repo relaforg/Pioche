@@ -1,17 +1,21 @@
 #[cfg(feature = "ssr")]
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 
 use leptos::prelude::*;
 #[cfg(feature = "ssr")]
 use sea_orm::{
-    ActiveValue::Set, ColumnTrait, ConnectionTrait, EntityTrait, ModelTrait, QueryFilter,
+    sea_query::Expr, ActiveValue::Set, ColumnTrait, ConnectionTrait, EntityTrait, ExprTrait,
+    ModelTrait, QueryFilter,
 };
 
-#[cfg(feature = "ssr")]
-use crate::entities::{draws, participants};
 use crate::server::{
     draw_kind::DrawKindDto, error::AppError, exclusions::ExclusionDto, participants::Participants,
     team_mode::TeamModeDto,
+};
+#[cfg(feature = "ssr")]
+use crate::{
+    entities::{draws, exclusions, participants},
+    server::exclusions::Exclusions,
 };
 
 #[server]
@@ -28,6 +32,7 @@ pub async fn update_and_draw_teams(
 
     let user = require_user()?;
     let participants = Participants::parse(DrawKindDto::Teams, participants)?;
+    let exclusions = Exclusions::parse(exclusions, &participants)?;
     let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
 
     let draw = draws::Entity::find_by_id(draw_id)
@@ -40,7 +45,7 @@ pub async fn update_and_draw_teams(
         return Ok(());
     }
 
-    update(&db, draw, participants).await?;
+    update(&db, draw, participants, exclusions).await?;
 
     leptos_axum::redirect(&format!("/tirage/{draw_id}"));
     Ok(())
@@ -51,7 +56,19 @@ async fn update(
     db: &impl ConnectionTrait,
     draw: draws::Model,
     participants: Participants,
+    exclusions: Exclusions,
 ) -> Result<(), AppError> {
+    let ids = update_participants(db, &draw, participants).await?;
+    update_exclusions(db, &draw, exclusions, ids.as_slice()).await?;
+    Ok(())
+}
+
+#[cfg(feature = "ssr")]
+async fn update_participants(
+    db: &impl ConnectionTrait,
+    draw: &draws::Model,
+    participants: Participants,
+) -> Result<Vec<i32>, AppError> {
     let mut participants_back: HashMap<String, i32> = draw
         .find_related(participants::Entity)
         .all(db)
@@ -63,13 +80,18 @@ async fn update(
     let mut to_add = Vec::new();
     let participants_front = participants.into_inner();
 
-    for p in participants_front {
-        if participants_back.remove(&p).is_none() {
-            to_add.push(p);
+    let slots: Vec<Option<i32>> = participants_front
+        .iter()
+        .map(|n| participants_back.remove(n))
+        .collect();
+
+    for (i, s) in slots.iter().enumerate() {
+        if s.is_none() {
+            to_add.push(participants_front[i].clone());
         }
     }
 
-    participants::Entity::insert_many(
+    let participants = participants::Entity::insert_many(
         to_add
             .into_iter()
             .map(|name| participants::ActiveModel {
@@ -79,13 +101,78 @@ async fn update(
             })
             .collect::<Vec<participants::ActiveModel>>(),
     )
-    .exec(db)
+    .exec_with_returning(db)
     .await?;
+
+    let ids = {
+        let mut ids = Vec::new();
+        for (i, s) in slots.iter().enumerate() {
+            if s.is_none() {
+                ids.push(
+                    participants
+                        .iter()
+                        .find(|p| p.name == participants_front[i])
+                        .ok_or(AppError::Internal)?
+                        .id,
+                );
+            } else {
+                ids.push(s.ok_or(AppError::Internal)?);
+            }
+        }
+        ids
+    };
 
     participants::Entity::delete_many()
         .filter(participants::Column::DrawId.eq(draw.id))
         .filter(participants::Column::Id.is_in(participants_back.into_values()))
         .exec(db)
         .await?;
+
+    Ok(ids)
+}
+
+#[cfg(feature = "ssr")]
+async fn update_exclusions(
+    db: &impl ConnectionTrait,
+    draw: &draws::Model,
+    exclusions: Exclusions,
+    ids: &[i32],
+) -> Result<(), AppError> {
+    let back: BTreeSet<(i32, i32)> = exclusions::Entity::find()
+        .filter(exclusions::Column::ParticipantA.is_in(ids))
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|e| (e.participant_a, e.participant_b))
+        .collect();
+
+    let front = exclusions.into_id_pairs(ids);
+
+    let to_add = front.difference(&back);
+    let to_delete = back.difference(&front);
+
+    exclusions::Entity::insert_many(
+        to_add
+            .map(|e| exclusions::ActiveModel {
+                participant_a: Set(e.0),
+                participant_b: Set(e.1),
+                ..Default::default()
+            })
+            .collect::<Vec<exclusions::ActiveModel>>(),
+    )
+    .exec(db)
+    .await?;
+
+    exclusions::Entity::delete_many()
+        .filter(
+            Expr::tuple([
+                Expr::col(exclusions::Column::ParticipantA),
+                Expr::col(exclusions::Column::ParticipantB),
+            ])
+            .in_tuples(to_delete.copied()),
+        )
+        .exec(db)
+        .await?;
+
     Ok(())
 }

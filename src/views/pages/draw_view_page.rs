@@ -52,6 +52,7 @@ fn DrawView(draw: DrawDetailDto) -> impl IntoView {
                 name=draw.name
                 share_token=draw.share_token
                 participants=draw.participants
+                exclusions=draw.exclusions
                 options
                 teams
                 draw_id=draw.id

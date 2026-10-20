@@ -3,12 +3,15 @@ use leptos::prelude::*;
 use crate::server::exclusions::ExclusionDto;
 
 #[component]
-pub fn ExclusionsField(participants: RwSignal<Vec<String>>) -> impl IntoView {
+pub fn ExclusionsField(
+    participants: RwSignal<Vec<String>>,
+    #[prop(optional)] initial: Vec<ExclusionDto>,
+) -> impl IntoView {
     let select_a = RwSignal::new(String::new());
     let select_b = RwSignal::new(String::new());
     let local_error = RwSignal::new(None::<String>);
 
-    let exclusions = RwSignal::new(Vec::<ExclusionDto>::new());
+    let exclusions = RwSignal::new(initial);
     let try_add_exclusion = move || -> Result<(), String> {
         let a = select_a.get();
         let b = select_b.get();

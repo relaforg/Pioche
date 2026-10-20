@@ -4,8 +4,8 @@ use std::collections::{BTreeSet, HashMap};
 use leptos::prelude::*;
 #[cfg(feature = "ssr")]
 use sea_orm::{
-    sea_query::Expr, ActiveValue::Set, ColumnTrait, ConnectionTrait, EntityTrait, ExprTrait,
-    ModelTrait, QueryFilter,
+    sea_query::Expr, ActiveModelTrait, ActiveValue::Set, ColumnTrait, ConnectionTrait, EntityTrait,
+    ExprTrait, IntoActiveModel, ModelTrait, QueryFilter,
 };
 
 use crate::server::{
@@ -14,7 +14,7 @@ use crate::server::{
 };
 #[cfg(feature = "ssr")]
 use crate::{
-    entities::{draws, exclusions, participants},
+    entities::{draws, exclusions, participants, team_settings},
     server::exclusions::Exclusions,
 };
 
@@ -28,7 +28,7 @@ pub async fn update_and_draw_teams(
 ) -> Result<(), AppError> {
     use crate::entities::draws;
     use crate::server::session::require_user;
-    use sea_orm::{DatabaseConnection, EntityTrait};
+    use sea_orm::{DatabaseConnection, EntityTrait, TransactionTrait};
 
     let user = require_user()?;
     let participants = Participants::parse(DrawKindDto::Teams, participants)?;
@@ -45,7 +45,9 @@ pub async fn update_and_draw_teams(
         return Ok(());
     }
 
-    update(&db, draw, participants, exclusions).await?;
+    let txn = db.begin().await?;
+    update(&txn, draw, participants, exclusions, team_mode, team_value).await?;
+    txn.commit().await?;
 
     leptos_axum::redirect(&format!("/tirage/{draw_id}"));
     Ok(())
@@ -57,9 +59,39 @@ async fn update(
     draw: draws::Model,
     participants: Participants,
     exclusions: Exclusions,
+    team_mode: Option<TeamModeDto>,
+    team_value: Option<i16>,
 ) -> Result<(), AppError> {
     let ids = update_participants(db, &draw, participants).await?;
     update_exclusions(db, &draw, exclusions, ids.as_slice()).await?;
+    update_team_settings(db, &draw, team_mode, team_value).await?;
+    Ok(())
+}
+
+#[cfg(feature = "ssr")]
+async fn update_team_settings(
+    db: &impl ConnectionTrait,
+    draw: &draws::Model,
+    team_mode: Option<TeamModeDto>,
+    team_value: Option<i16>,
+) -> Result<(), AppError> {
+    let mut settings = team_settings::Entity::find()
+        .filter(team_settings::Column::DrawId.eq(draw.id))
+        .one(db)
+        .await?
+        .ok_or(AppError::Internal)?
+        .into_active_model();
+
+    if let Some(value) = team_value {
+        settings.value = Set(value);
+    }
+
+    if let Some(mode) = team_mode {
+        settings.mode = Set(mode.into());
+    }
+
+    settings.update(db).await?;
+
     Ok(())
 }
 
@@ -173,6 +205,20 @@ async fn update_exclusions(
         )
         .exec(db)
         .await?;
+
+    Ok(())
+}
+
+#[cfg(feature = "ssr")]
+async fn draw_teams(db: &impl ConnectionTrait, draw: &draws::Model) -> Result<(), AppError> {
+    let settings = team_settings::Entity::find()
+        .filter(team_settings::Column::DrawId.eq(draw.id))
+        .one(db)
+        .await?
+        .ok_or(AppError::Internal)?;
+
+    let mode = settings.mode;
+    let value = settings.value;
 
     Ok(())
 }

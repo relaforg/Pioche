@@ -104,8 +104,10 @@ fn TeamsSettings(
     let draft = RwSignal::new(String::new());
     let local_error = RwSignal::new(None::<String>);
     let count = move || participants.with(Vec::len);
+    let add_participant = move || local_error.set(try_add_participant(participants, draft).err());
 
     let update_and_draw_team = ServerAction::<UpdateAndDrawTeams>::new();
+    let server_error = move || update_and_draw_team.value().get().and_then(Result::err);
 
     view! {
         <ActionForm action=update_and_draw_team>
@@ -114,19 +116,29 @@ fn TeamsSettings(
                 <h3 class="text-2xl mb-4">"Réglages du tirage"</h3>
                 <label for="participant-draft">"Participants (" {count} ")"</label>
                 <ParticipantList participants />
-                <input
-                    id="participant-draft"
-                    type="text"
-                    placeholder="Ajouter un nom puis Entrée"
-                    bind:value=draft
-                    on:input=move |_| local_error.set(None)
-                    on:keydown=move |ev: leptos::ev::KeyboardEvent| {
-                        if ev.key() == "Enter" {
-                            ev.prevent_default();
-                            local_error.set(try_add_participant(participants, draft).err());
+                <div class="flex gap-3">
+                    <input
+                        id="participant-draft"
+                        type="text"
+                        placeholder="Ajouter un nom puis Entrée"
+                        class="flex-1"
+                        bind:value=draft
+                        on:input=move |_| local_error.set(None)
+                        on:keydown=move |ev: leptos::ev::KeyboardEvent| {
+                            if ev.key() == "Enter" {
+                                ev.prevent_default();
+                                add_participant();
+                            }
                         }
-                    }
-                />
+                    />
+                    <button
+                        type="button"
+                        class="cursor-pointer border rounded-full px-5 bg-raspberry-500 btn-press-ink"
+                        on:click=move |_| add_participant()
+                    >
+                        "Ajouter"
+                    </button>
+                </div>
                 {move || {
                     local_error.get().map(|e| view! { <p class="mt-2 text-raspberry-500">{e}</p> })
                 }}
@@ -141,6 +153,14 @@ fn TeamsSettings(
                 >
                     "Mélanger !"
                 </button>
+                {move || {
+                    server_error()
+                        .map(|e| {
+                            view! {
+                                <p class="mt-2 text-raspberry-500 text-center">{e.to_string()}</p>
+                            }
+                        })
+                }}
             </Card>
         </ActionForm>
     }

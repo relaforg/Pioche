@@ -3,6 +3,8 @@ use std::collections::{BTreeSet, HashMap};
 
 use leptos::prelude::*;
 #[cfg(feature = "ssr")]
+use rand::seq::SliceRandom;
+#[cfg(feature = "ssr")]
 use sea_orm::{
     sea_query::Expr, ActiveModelTrait, ActiveValue::Set, ColumnTrait, ConnectionTrait, EntityTrait,
     ExprTrait, IntoActiveModel, ModelTrait, QueryFilter,
@@ -14,7 +16,7 @@ use crate::server::{
 };
 #[cfg(feature = "ssr")]
 use crate::{
-    entities::{draws, exclusions, participants, team_settings},
+    entities::{draws, exclusions, participants, team_settings, teams},
     server::exclusions::Exclusions,
 };
 
@@ -46,7 +48,8 @@ pub async fn update_and_draw_teams(
     }
 
     let txn = db.begin().await?;
-    update(&txn, draw, participants, exclusions, team_mode, team_value).await?;
+    let ids = update(&txn, &draw, participants, exclusions, team_mode, team_value).await?;
+    draw_teams(&txn, &draw, ids.as_slice()).await?;
     txn.commit().await?;
 
     leptos_axum::redirect(&format!("/tirage/{draw_id}"));
@@ -56,16 +59,16 @@ pub async fn update_and_draw_teams(
 #[cfg(feature = "ssr")]
 async fn update(
     db: &impl ConnectionTrait,
-    draw: draws::Model,
+    draw: &draws::Model,
     participants: Participants,
     exclusions: Exclusions,
     team_mode: Option<TeamModeDto>,
     team_value: Option<i16>,
-) -> Result<(), AppError> {
-    let ids = update_participants(db, &draw, participants).await?;
-    update_exclusions(db, &draw, exclusions, ids.as_slice()).await?;
-    update_team_settings(db, &draw, team_mode, team_value).await?;
-    Ok(())
+) -> Result<Vec<i32>, AppError> {
+    let ids = update_participants(db, draw, participants).await?;
+    update_exclusions(db, draw, exclusions, ids.as_slice()).await?;
+    update_team_settings(db, draw, team_mode, team_value).await?;
+    Ok(ids)
 }
 
 #[cfg(feature = "ssr")]
@@ -210,15 +213,152 @@ async fn update_exclusions(
 }
 
 #[cfg(feature = "ssr")]
-async fn draw_teams(db: &impl ConnectionTrait, draw: &draws::Model) -> Result<(), AppError> {
+async fn draw_teams(
+    db: &impl ConnectionTrait,
+    draw: &draws::Model,
+    ids: &[i32],
+) -> Result<(), AppError> {
     let settings = team_settings::Entity::find()
         .filter(team_settings::Column::DrawId.eq(draw.id))
         .one(db)
         .await?
         .ok_or(AppError::Internal)?;
 
+    let participants = draw.find_related(participants::Entity).all(db).await?;
+    let exclusions = exclusions::Entity::find()
+        .filter(exclusions::Column::ParticipantA.is_in(ids))
+        .all(db)
+        .await?;
+
     let mode = settings.mode;
     let value = settings.value;
 
+    if participants.len() == 0 {
+        return Err(AppError::Invalid("Liste des participants vide".into()));
+    }
+
+    if value <= 0 {
+        return Err(AppError::Invalid("La value est nulle".into()));
+    }
+
+    let team_count = match mode {
+        crate::entities::sea_orm_active_enums::TeamMode::Size => {
+            (participants.len() / value as usize) as usize
+        }
+        crate::entities::sea_orm_active_enums::TeamMode::Count => value as usize,
+    };
+
+    if team_count > participants.len() {
+        return Err(AppError::Invalid(
+            "Plus d'équipes que de participants".into(),
+        ));
+    }
+
+    let mut idx = HashMap::new();
+    for (i, p) in participants.iter().enumerate() {
+        idx.insert(p.id, i);
+    }
+
+    let mut excl: Vec<Vec<usize>> = vec![Vec::new(); participants.len()];
+
+    for e in exclusions {
+        let a = *idx.get(&e.participant_a).ok_or(AppError::Internal)?;
+        let b = *idx.get(&e.participant_b).ok_or(AppError::Internal)?;
+        excl[a].push(b);
+        excl[b].push(a);
+    }
+
+    let team_of = {
+        let mut rng = rand::rng();
+        let mut order: Vec<usize> = (0..participants.len()).collect();
+        order.shuffle(&mut rng);
+        order.sort_by_key(|&i| std::cmp::Reverse(excl[i].len()));
+        let caps: Vec<usize> = (0..team_count)
+            .map(|t| {
+                participants.len() / team_count + usize::from(t < participants.len() % team_count)
+            })
+            .collect();
+
+        let mut team_of = vec![None; participants.len()];
+        let mut sizes = vec![0; caps.len()];
+        if !place(&order, &excl, &caps, &mut team_of, &mut sizes, &mut rng) {
+            return Err(AppError::Invalid(
+                "Impossible de former les équipes avec ces exclusions".into(),
+            ));
+        }
+
+        team_of
+    };
+
+    teams::Entity::delete_many()
+        .filter(teams::Column::DrawId.eq(draw.id))
+        .exec(db)
+        .await?;
+
+    // Creer les teams en base et reccuperer les indices (l'ordre n'a pas d'inportance)
+    let team_ids = teams::Entity::insert_many((0..team_count).map(|i| teams::ActiveModel {
+        name: Set(format!("Équipe {}", i + 1)),
+        draw_id: Set(draw.id),
+        position: Set(i as i16),
+        ..Default::default()
+    }))
+    .exec_with_returning_keys(db)
+    .await?;
+
+    // Update tous team_id des participants
+    let mut members: Vec<Vec<i32>> = vec![Vec::new(); team_count];
+    for (p, t) in participants.iter().zip(team_of) {
+        members[t.ok_or(AppError::Internal)?].push(p.id);
+    }
+
+    for (team_id, ids) in team_ids.into_iter().zip(members) {
+        participants::Entity::update_many()
+            .col_expr(participants::Column::TeamId, Expr::value(team_id))
+            .filter(participants::Column::Id.is_in(ids))
+            .exec(db)
+            .await?;
+    }
+
     Ok(())
+}
+
+#[cfg(feature = "ssr")]
+fn place(
+    order: &[usize],
+    excl: &[Vec<usize>],
+    caps: &[usize],
+    team_of: &mut [Option<usize>],
+    sizes: &mut [usize],
+    rng: &mut impl rand::Rng,
+) -> bool {
+    use rand::seq::SliceRandom;
+
+    let [p, rest @ ..] = order else {
+        return true;
+    };
+    let p = *p;
+
+    let mut teams: Vec<usize> = (0..caps.len()).collect();
+    teams.shuffle(rng);
+
+    for t in teams {
+        if sizes[t] == caps[t] {
+            continue;
+        }
+        if excl[p].iter().any(|&q| team_of[q] == Some(t)) {
+            continue;
+        }
+
+        team_of[p] = Some(t);
+        sizes[t] += 1;
+
+        if place(rest, excl, caps, team_of, sizes, rng) {
+            return true;
+        }
+
+        team_of[p] = None;
+        sizes[t] -= 1;
+    }
+
+    false
 }

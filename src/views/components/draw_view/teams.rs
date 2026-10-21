@@ -43,7 +43,7 @@ pub fn TeamsDraw(
         <div class="flex flex-col gap-8">
             <DrawHeader name=name.clone() subtitle=subtitle.clone() color=Color::Blue>
                 <BackButton />
-                <DeleteDrawButton draw_name=name />
+                <DeleteDrawButton draw_name=name draw_id />
             </DrawHeader>
             {share_token.map(|token| view! { <ShareLink token /> })}
             <div class="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] items-start">

@@ -1,5 +1,6 @@
 use leptos::prelude::*;
 
+use crate::server::draws::DeleteDraw;
 use crate::views::{colors::Color, components::button_link::ButtonLink};
 
 #[component]
@@ -27,8 +28,10 @@ pub fn DrawHeader(
 }
 
 #[island]
-pub fn DeleteDrawButton(draw_name: String) -> impl IntoView {
+pub fn DeleteDrawButton(draw_name: String, draw_id: i32) -> impl IntoView {
     let dialog = NodeRef::<leptos::html::Dialog>::new();
+    let delete_draw = ServerAction::<DeleteDraw>::new();
+    let server_error = move || delete_draw.value().get().and_then(Result::err);
     let close = move || {
         if let Some(d) = dialog.get() {
             d.close();
@@ -56,21 +59,29 @@ pub fn DeleteDrawButton(draw_name: String) -> impl IntoView {
                 "« " <strong>{draw_name}</strong>
                 " » sera supprimé avec ses participants et ses résultats. C'est définitif."
             </p>
-            <div class="flex justify-end gap-3 mt-6">
-                <button
-                    type="button"
-                    class="cursor-pointer border rounded-full px-5 py-2 bg-surface btn-press-blue-500"
-                    on:click=move |_| close()
-                >
-                    "Annuler"
-                </button>
-                <button
-                    type="button"
-                    class="cursor-pointer border rounded-full px-5 py-2 bg-raspberry-500 btn-press-ink"
-                >
-                    "Supprimer définitivement"
-                </button>
-            </div>
+            <ActionForm action=delete_draw>
+                <input type="hidden" name="id" value=draw_id />
+                <div class="flex justify-end gap-3 mt-6">
+                    <button
+                        type="button"
+                        class="cursor-pointer border rounded-full px-5 py-2 bg-surface btn-press-blue-500"
+                        on:click=move |_| close()
+                    >
+                        "Annuler"
+                    </button>
+                    <button
+                        type="submit"
+                        class="cursor-pointer border rounded-full px-5 py-2 bg-raspberry-500 btn-press-ink"
+                        disabled=move || delete_draw.pending().get()
+                    >
+                        "Supprimer définitivement"
+                    </button>
+                </div>
+                {move || {
+                    server_error()
+                        .map(|e| view! { <p class="mt-3 text-raspberry-500 text-right">{e.to_string()}</p> })
+                }}
+            </ActionForm>
         </dialog>
     }
 }

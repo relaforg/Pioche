@@ -16,6 +16,7 @@ pub fn SecretSantaDraw(
     name: String,
     participants: Vec<ParticipantDto>,
     options: SecretSantaOptions,
+    draw_id: i32,
 ) -> impl IntoView {
     let participant_count = participants.len();
     let completed = participants
@@ -44,7 +45,7 @@ pub fn SecretSantaDraw(
         <div class="flex flex-col gap-8">
             <DrawHeader name=name.clone() subtitle color=Color::Raspberry>
                 <BackButton />
-                <DeleteDrawButton draw_name=name />
+                <DeleteDrawButton draw_name=name draw_id />
             </DrawHeader>
             <PersonalLinks missing_emails=participant_count />
             <div>

@@ -60,7 +60,14 @@ fn DrawView(draw: DrawDetailDto) -> impl IntoView {
         }
         .into_any(),
         DrawSettingsDto::SecretSanta { options, .. } => {
-            view! { <SecretSantaDraw name=draw.name participants=draw.participants options /> }
+            view! {
+                <SecretSantaDraw
+                    name=draw.name
+                    participants=draw.participants
+                    options
+                    draw_id=draw.id
+                />
+            }
                 .into_any()
         }
     }

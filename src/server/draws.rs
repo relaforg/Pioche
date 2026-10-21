@@ -296,6 +296,18 @@ pub async fn get_draw_by_id(id: i32) -> Result<DrawDetailDto, AppError> {
 }
 
 #[server]
+pub async fn delete_draw(id: i32) -> Result<(), AppError> {
+    use sea_orm::DatabaseConnection;
+
+    let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
+
+    draws::Entity::delete_by_id(id).exec(&db).await?;
+
+    leptos_axum::redirect("/mes-tirages");
+    Ok(())
+}
+
+#[server]
 pub async fn get_shared_teams(token: String) -> Result<SharedTeamsDto, AppError> {
     use crate::entities::sea_orm_active_enums::DrawKind;
     use sea_orm::{DatabaseConnection, ModelTrait};

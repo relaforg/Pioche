@@ -8,6 +8,7 @@ use crate::server::teams_options::TeamOptions;
 use crate::views::colors::Color;
 use crate::views::components::{
     card::Card,
+    copy_button::CopyButton,
     create_draw::{
         exclusions_field::ExclusionsField,
         participants_field::{try_add_participant, ParticipantList},
@@ -81,12 +82,7 @@ fn ShareLink(token: String) -> impl IntoView {
                     <code class="flex-1 px-4 py-2 bg-neutral-200 border border-dashed rounded-full font-bold truncate">
                         {format!("{SHARE_BASE}{token}")}
                     </code>
-                    <button
-                        type="button"
-                        class="cursor-pointer border rounded-full py-2 px-5 bg-raspberry-500 btn-press-ink"
-                    >
-                        "Copier"
-                    </button>
+                    <CopyButton text=format!("{SHARE_BASE}{token}") />
                 </div>
             </div>
         </Card>
@@ -167,7 +163,7 @@ fn TeamsSettings(
 }
 
 #[component]
-fn TeamsResult(teams: Vec<TeamDto>, subtitle: String) -> impl IntoView {
+pub fn TeamsResult(teams: Vec<TeamDto>, subtitle: String) -> impl IntoView {
     view! {
         <div>
             <div class="flex flex-wrap items-baseline gap-3 mb-4">

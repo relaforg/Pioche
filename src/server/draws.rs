@@ -54,6 +54,14 @@ pub struct DrawDetailDto {
     pub exclusions: Vec<ExclusionDto>,
 }
 
+/// Vue publique d'un tirage d'équipes, accessible via son lien de partage.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SharedTeamsDto {
+    pub name: String,
+    pub participant_count: usize,
+    pub teams: Vec<TeamDto>,
+}
+
 #[server]
 pub async fn add_draw(
     name: String,
@@ -284,6 +292,37 @@ pub async fn get_draw_by_id(id: i32) -> Result<DrawDetailDto, AppError> {
         participants: participants.into_iter().map(Into::into).collect(),
         settings,
         exclusions,
+    })
+}
+
+#[server]
+pub async fn get_shared_teams(token: String) -> Result<SharedTeamsDto, AppError> {
+    use crate::entities::sea_orm_active_enums::DrawKind;
+    use sea_orm::{DatabaseConnection, ModelTrait};
+
+    let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
+
+    let draw = draws::Entity::find_by_share_token(token)
+        .one(&db)
+        .await?
+        .ok_or(AppError::Internal)?;
+
+    let participants = draw
+        .find_related(participants::Entity)
+        .order_by_id_asc()
+        .all(&db)
+        .await?;
+
+    let DrawSettingsDto::Teams { teams, .. } =
+        load_teams_setting(&db, &draw, participants.as_slice()).await?
+    else {
+        return Err(AppError::Internal);
+    };
+
+    Ok(SharedTeamsDto {
+        name: draw.name,
+        participant_count: participants.len(),
+        teams,
     })
 }
 

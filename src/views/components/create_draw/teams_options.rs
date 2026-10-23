@@ -25,15 +25,6 @@ pub fn TeamsOption(
     let mode = RwSignal::new(initial_mode);
     let max = move || (participant_count.get() / 2).max(2);
     let value = RwSignal::new(initial_value);
-    let summary = move || {
-        team_split(participant_count.get(), mode.get(), value.get()).map(|(count, min, max)| {
-            if min == max {
-                format!("Soit {count} équipes de {min}.")
-            } else {
-                format!("Soit {count} équipes de {min} à {max}.")
-            }
-        })
-    };
     view! {
         <h3 class="font-semibold text-lg">"Je définis..."</h3>
         <fieldset class="grid gap-5 sm:grid-cols-2 my-2">
@@ -56,7 +47,6 @@ pub fn TeamsOption(
                 {value}
             </output>
         </div>
-        // <p class="mt-2 text-fg-soft">{summary}</p>
     }
 }
 

@@ -47,7 +47,8 @@ pub struct DrawDetailDto {
     pub id: i32,
     pub owner_id: i32,
     pub name: String,
-    pub share_token: Option<String>,
+    /// Lien public complet (`PUBLIC_URL/e/<jeton>`), construit côté serveur.
+    pub share_url: Option<String>,
     pub drawn_at: Option<DateTime<FixedOffset>>,
     pub links_sent_at: Option<DateTime<FixedOffset>>,
     pub participants: Vec<ParticipantDto>,
@@ -235,10 +236,12 @@ pub async fn get_draw_by_id(id: i32) -> Result<DrawDetailDto, AppError> {
     use crate::entities::sea_orm_active_enums::DrawKind;
     use crate::entities::{draws, exclusions, participants};
     use crate::server::session::require_user;
+    use crate::server::ssr::public_url::PublicUrl;
     use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, ModelTrait, QueryFilter};
 
     let user = require_user()?;
     let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
+    let public_url = use_context::<PublicUrl>().ok_or(AppError::Internal)?;
 
     let Some(draw) = draws::Entity::find_by_id(id)
         .filter(draws::Column::OwnerId.eq(user.id))
@@ -288,7 +291,9 @@ pub async fn get_draw_by_id(id: i32) -> Result<DrawDetailDto, AppError> {
         id,
         owner_id: draw.owner_id,
         name: draw.name,
-        share_token: draw.share_token,
+        share_url: draw
+            .share_token
+            .map(|token| public_url.link(&format!("/e/{token}"))),
         drawn_at: draw.drawn_at,
         links_sent_at: draw.links_sent_at,
         participants: participants.into_iter().map(Into::into).collect(),
@@ -299,11 +304,22 @@ pub async fn get_draw_by_id(id: i32) -> Result<DrawDetailDto, AppError> {
 
 #[server]
 pub async fn delete_draw(id: i32) -> Result<(), AppError> {
+    use crate::server::session::require_user;
     use sea_orm::DatabaseConnection;
 
+    let user = require_user()?;
     let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
 
-    draws::Entity::delete_by_id(id).exec(&db).await?;
+    // Le filtre sur le propriétaire fait partie de la requête : impossible de supprimer
+    // le tirage de quelqu'un d'autre, même en appelant l'endpoint directement.
+    let deleted = draws::Entity::delete_many()
+        .filter(draws::Column::Id.eq(id))
+        .filter(draws::Column::OwnerId.eq(user.id))
+        .exec(&db)
+        .await?;
+    if deleted.rows_affected == 0 {
+        return Err(AppError::Invalid("Tirage introuvable".into()));
+    }
 
     leptos_axum::redirect("/mes-tirages");
     Ok(())
@@ -311,8 +327,10 @@ pub async fn delete_draw(id: i32) -> Result<(), AppError> {
 
 #[server]
 pub async fn get_shared_teams(token: String) -> Result<SharedTeamsDto, AppError> {
-    use crate::entities::sea_orm_active_enums::DrawKind;
+    use crate::server::ssr::rate_limit::rate_limits;
     use sea_orm::{DatabaseConnection, ModelTrait};
+
+    rate_limits()?.check_public_link()?;
 
     let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
 

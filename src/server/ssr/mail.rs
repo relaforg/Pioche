@@ -16,13 +16,10 @@ use crate::server::error::AppError;
 /// | `SMTP_USERNAME` | aucun                            |
 /// | `SMTP_PASSWORD` | aucun                            |
 /// | `MAIL_FROM`     | `Pioche <noreply@pioche.local>`  |
-/// | `PUBLIC_URL`    | `http://localhost:3000`          |
 #[derive(Clone)]
 pub struct Mailer {
     transport: AsyncSmtpTransport<Tokio1Executor>,
     from: Mailbox,
-    /// URL publique du site, sans `/` final, pour construire les liens.
-    pub public_url: String,
 }
 
 impl Mailer {
@@ -59,14 +56,10 @@ impl Mailer {
         let from = var("MAIL_FROM", "Pioche <noreply@pioche.local>")
             .parse()
             .map_err(|e| format!("MAIL_FROM invalide : {e}"))?;
-        let public_url = var("PUBLIC_URL", "http://localhost:3000")
-            .trim_end_matches('/')
-            .to_string();
 
         Ok(Self {
             transport: builder.build(),
             from,
-            public_url,
         })
     }
 

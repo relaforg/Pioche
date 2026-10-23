@@ -11,9 +11,12 @@ pub async fn register(
 ) -> Result<(), AppError> {
     use crate::entities::users;
     use crate::server::ssr::hash::hash;
+    use crate::server::ssr::rate_limit::rate_limits;
     use crate::server::ssr::session::{append_cookie, create_session};
     use leptos_axum::redirect;
     use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection};
+
+    rate_limits()?.check_auth()?;
 
     let email = email.trim();
     if email.is_empty() {
@@ -63,9 +66,12 @@ pub async fn register(
 pub async fn connect(email: String, password: String) -> Result<(), AppError> {
     use crate::entities::users;
     use crate::server::ssr::hash::{verify, DUMMY_HASH};
+    use crate::server::ssr::rate_limit::rate_limits;
     use crate::server::ssr::session::{append_cookie, create_session};
     use leptos_axum::redirect;
     use sea_orm::DatabaseConnection;
+
+    rate_limits()?.check_auth()?;
 
     let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
 

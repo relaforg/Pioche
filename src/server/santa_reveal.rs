@@ -33,8 +33,10 @@ async fn participant_from_token(
     token: &str,
 ) -> Result<crate::entities::participants::Model, AppError> {
     use crate::entities::participants;
-    use crate::server::ssr::session::hash_token;
+    use crate::server::ssr::{rate_limit::rate_limits, session::hash_token};
     use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
+
+    rate_limits()?.check_public_link()?;
 
     let invalid = || AppError::Invalid("Ce lien n'est pas (ou plus) valide".into());
     let digest = hash_token(token).ok_or_else(invalid)?;

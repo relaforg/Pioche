@@ -6,13 +6,13 @@ use leptos::prelude::*;
 use rand::seq::SliceRandom;
 #[cfg(feature = "ssr")]
 use sea_orm::{
-    ActiveModelTrait, ActiveValue::Set, ColumnTrait, ConnectionTrait, EntityTrait,
-    IntoActiveModel, QueryFilter,
+    ActiveModelTrait, ActiveValue::Set, ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel,
+    QueryFilter,
 };
 
-use crate::server::error::AppError;
 #[cfg(feature = "ssr")]
 use crate::entities::{draws, exclusions, santa_assignments};
+use crate::server::error::AppError;
 
 /// Tire les binômes d'un tirage encore modifiable (déjà vérifié par l'appelant),
 /// à partir des participants et exclusions en base.
@@ -55,13 +55,16 @@ pub async fn send_santa_links(draw_id: i32) -> Result<(), AppError> {
     use crate::server::{
         secret_santa_option::SecretSantaOptions,
         session::require_user,
-        ssr::{mail::Mailer, session::generate_token},
+        ssr::{
+            mail::Mailer, public_url::PublicUrl, rate_limit::rate_limits, session::generate_token,
+        },
     };
     use sea_orm::{DatabaseConnection, ModelTrait};
 
     let user = require_user()?;
     let db = use_context::<DatabaseConnection>().ok_or(AppError::Internal)?;
     let mailer = use_context::<Mailer>().ok_or(AppError::Internal)?;
+    let public_url = use_context::<PublicUrl>().ok_or(AppError::Internal)?;
 
     let draw = draws::Entity::find_by_id(draw_id)
         .one(&db)
@@ -93,13 +96,20 @@ pub async fn send_santa_links(draw_id: i32) -> Result<(), AppError> {
         .ok_or(AppError::Internal)?
         .into();
 
+    // Seuls les liens pas encore partis sont envoyés (et comptés).
+    let to_send: Vec<_> = participants
+        .into_iter()
+        .filter(|p| p.access_token.is_none())
+        .collect();
+    rate_limits()?.check_emails(user.id, to_send.len() as u32)?;
+
     let mut failed = Vec::new();
-    for participant in participants.into_iter().filter(|p| p.access_token.is_none()) {
+    for participant in to_send {
         let Some(email) = participant.email.clone() else {
             continue;
         };
         let (token, digest) = generate_token();
-        let link = format!("{}/s/{token}", mailer.public_url);
+        let link = public_url.link(&format!("/s/{token}"));
         let body = link_email_body(&participant.name, &user.name, &draw.name, &options, &link);
         let subject = format!("🎁 Secret Santa « {} » : découvre ton binôme", draw.name);
 

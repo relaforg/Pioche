@@ -50,7 +50,7 @@ fn DrawView(draw: DrawDetailDto) -> impl IntoView {
         DrawSettingsDto::Teams { options, teams } => view! {
             <TeamsDraw
                 name=draw.name
-                share_token=draw.share_token
+                share_url=draw.share_url
                 participants=draw.participants
                 exclusions=draw.exclusions
                 options

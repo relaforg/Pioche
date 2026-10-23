@@ -30,6 +30,7 @@ cookie = { version = "0.18.2", optional = true }
 lettre = { version = "0.11.23", default-features = false, features = ["builder", "smtp-transport", "pool", "hostname", "tokio1-rustls-tls"], optional = true }
 strum = { version = "0.28", features = ["derive"] }
 web-sys = { version = "0.3", features = ["Clipboard", "Navigator"] }
+governor = { version = "0.10.4", optional = true }
 
 [features]
 hydrate = [
@@ -51,7 +52,8 @@ ssr = [
 	"dep:sha2",
 	"dep:hex",
 	"dep:cookie",
-	"dep:lettre"
+	"dep:lettre",
+	"dep:governor"
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode

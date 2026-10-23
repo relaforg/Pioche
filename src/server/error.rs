@@ -12,6 +12,7 @@ pub enum AppError {
     Internal,
     ServerFn(ServerFnErrorErr),
     Unauthorized,
+    TooManyRequests,
 }
 
 impl FromServerFnError for AppError {
@@ -29,6 +30,9 @@ impl fmt::Display for AppError {
             AppError::Internal => write!(f, "Oups, une erreur est survenue"),
             AppError::ServerFn(_) => write!(f, "Impossible de joindre le serveur"),
             AppError::Unauthorized => write!(f, "Unauthorized access"),
+            AppError::TooManyRequests => {
+                write!(f, "Trop de tentatives : réessaie dans quelques minutes")
+            }
         }
     }
 }

@@ -10,14 +10,11 @@ use sea_orm::{
     ExprTrait, IntoActiveModel, ModelTrait, QueryFilter,
 };
 
-use crate::server::{
-    draw_kind::DrawKindDto, error::AppError, exclusions::ExclusionDto, participants::Participants,
-    team_mode::TeamModeDto,
-};
+use crate::server::{error::AppError, exclusions::ExclusionDto, team_mode::TeamModeDto};
 #[cfg(feature = "ssr")]
 use crate::{
     entities::{draws, exclusions, participants, team_settings, teams},
-    server::exclusions::Exclusions,
+    server::{draw_kind::DrawKindDto, exclusions::Exclusions, participants::Participants},
 };
 
 #[server]
@@ -66,7 +63,7 @@ async fn update(
     team_value: Option<i16>,
 ) -> Result<Vec<i32>, AppError> {
     let ids = update_participants(db, draw, participants).await?;
-    update_exclusions(db, draw, exclusions, ids.as_slice()).await?;
+    update_exclusions(db, exclusions, ids.as_slice()).await?;
     update_team_settings(db, draw, team_mode, team_value).await?;
     Ok(ids)
 }
@@ -169,7 +166,6 @@ async fn update_participants(
 #[cfg(feature = "ssr")]
 async fn update_exclusions(
     db: &impl ConnectionTrait,
-    draw: &draws::Model,
     exclusions: Exclusions,
     ids: &[i32],
 ) -> Result<(), AppError> {

@@ -13,6 +13,10 @@ async fn main() {
         .await
         .expect("Cannot connect to the database");
     let mailer = pioche::server::ssr::mail::Mailer::from_env().expect("Invalid SMTP configuration");
+    let public_url =
+        pioche::server::ssr::public_url::PublicUrl::from_env().expect("Invalid PUBLIC_URL");
+    let rate_limits = pioche::server::ssr::rate_limit::RateLimits::from_env();
+    rate_limits.spawn_cleanup();
 
     let conf = get_configuration(None).unwrap();
     let addr = conf.leptos_options.site_addr;
@@ -31,6 +35,8 @@ async fn main() {
                 move || {
                     provide_context(db.clone());
                     provide_context(mailer.clone());
+                    provide_context(public_url.clone());
+                    provide_context(rate_limits.clone());
                 }
             },
             {
@@ -49,9 +55,13 @@ async fn main() {
     // `axum::Server` is a re-export of `hyper::Server`
     log!("listening on http://{}", &addr);
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-    axum::serve(listener, app.into_make_service())
-        .await
-        .unwrap();
+    // `ConnectInfo` donne l'IP du client aux limites de débit.
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .await
+    .unwrap();
 }
 
 #[cfg(not(feature = "ssr"))]

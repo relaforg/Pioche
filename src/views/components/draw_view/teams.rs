@@ -20,12 +20,10 @@ use crate::views::components::{
     },
 };
 
-const SHARE_BASE: &str = "pioche.fr/e/";
-
 #[component]
 pub fn TeamsDraw(
     name: String,
-    share_token: Option<String>,
+    share_url: Option<String>,
     participants: Vec<ParticipantDto>,
     exclusions: Vec<ExclusionDto>,
     options: TeamOptions,
@@ -45,7 +43,7 @@ pub fn TeamsDraw(
                 <BackButton />
                 <DeleteDrawButton draw_name=name draw_id />
             </DrawHeader>
-            {share_token.map(|token| view! { <ShareLink token /> })}
+            {share_url.map(|url| view! { <ShareLink url /> })}
             <div class="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] items-start">
                 <TeamsSettings participants=names exclusions options draw_id />
                 <TeamsResult teams subtitle />
@@ -68,7 +66,7 @@ fn team_count(participant_count: usize, options: &TeamOptions, teams: &[TeamDto]
 }
 
 #[component]
-fn ShareLink(token: String) -> impl IntoView {
+fn ShareLink(url: String) -> impl IntoView {
     view! {
         <Card bg_color=Color::Surface shadow_color=Color::Blue>
             <div class="flex flex-wrap items-center justify-between gap-5">
@@ -80,9 +78,9 @@ fn ShareLink(token: String) -> impl IntoView {
                 </div>
                 <div class="flex flex-1 items-center gap-3 min-w-64">
                     <code class="flex-1 px-4 py-2 bg-neutral-200 border border-dashed rounded-full font-bold truncate">
-                        {format!("{SHARE_BASE}{token}")}
+                        {url.clone()}
                     </code>
-                    <CopyButton text=format!("{SHARE_BASE}{token}") />
+                    <CopyButton text=url />
                 </div>
             </div>
         </Card>

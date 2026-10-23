@@ -5,6 +5,8 @@ pub mod error;
 pub mod exclusions;
 pub mod participants;
 pub mod question_kind;
+pub mod santa_draw;
+pub mod santa_edit;
 pub mod secret_santa_option;
 pub mod session;
 #[cfg(feature = "ssr")]

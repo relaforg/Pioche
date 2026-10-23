@@ -49,6 +49,7 @@ pub struct DrawDetailDto {
     pub name: String,
     pub share_token: Option<String>,
     pub drawn_at: Option<DateTime<FixedOffset>>,
+    pub links_sent_at: Option<DateTime<FixedOffset>>,
     pub participants: Vec<ParticipantDto>,
     pub settings: DrawSettingsDto,
     pub exclusions: Vec<ExclusionDto>,
@@ -289,6 +290,7 @@ pub async fn get_draw_by_id(id: i32) -> Result<DrawDetailDto, AppError> {
         name: draw.name,
         share_token: draw.share_token,
         drawn_at: draw.drawn_at,
+        links_sent_at: draw.links_sent_at,
         participants: participants.into_iter().map(Into::into).collect(),
         settings,
         exclusions,
@@ -414,6 +416,7 @@ mod convert {
                 share_token,
                 drawn_at,
                 created_at,
+                links_sent_at: _,
             } = draw;
 
             DrawDto {

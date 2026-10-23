@@ -64,7 +64,10 @@ fn DrawView(draw: DrawDetailDto) -> impl IntoView {
                 <SecretSantaDraw
                     name=draw.name
                     participants=draw.participants
+                    exclusions=draw.exclusions
                     options
+                    drawn_at=draw.drawn_at
+                    links_sent_at=draw.links_sent_at
                     draw_id=draw.id
                 />
             }

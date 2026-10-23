@@ -16,6 +16,7 @@ pub struct Model {
     pub share_token: Option<String>,
     pub drawn_at: Option<DateTimeWithTimeZone>,
     pub created_at: DateTimeWithTimeZone,
+    pub links_sent_at: Option<DateTimeWithTimeZone>,
     #[sea_orm(has_many)]
     pub draw_questions: HasMany<super::draw_questions::Entity>,
     #[sea_orm(has_many)]

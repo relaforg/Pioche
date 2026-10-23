@@ -11,6 +11,7 @@ mod m20261006_090004_create_participants;
 mod m20261006_090005_create_exclusions;
 mod m20261006_090006_create_santa_assignments;
 mod m20261006_090007_create_answers;
+mod m20261023_120000_add_links_sent_at_to_draws;
 
 pub struct Migrator;
 
@@ -29,6 +30,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20261006_090005_create_exclusions::Migration),
             Box::new(m20261006_090006_create_santa_assignments::Migration),
             Box::new(m20261006_090007_create_answers::Migration),
+            Box::new(m20261023_120000_add_links_sent_at_to_draws::Migration),
         ]
     }
 }

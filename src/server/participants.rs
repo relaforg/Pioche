@@ -88,7 +88,13 @@ pub async fn update_participant_email(participant_id: i32, email: String) -> Res
         ));
     }
 
+    // Nouvelle adresse : le lien éventuellement parti vers l'ancienne n'est plus valable,
+    // un nouvel envoi lui en générera un autre.
+    let email_changed = participant.email != email;
     let mut participant = participant.into_active_model();
+    if email_changed {
+        participant.access_token = Set(None);
+    }
     participant.email = Set(email);
     participant.update(&db).await?;
 

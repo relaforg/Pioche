@@ -5,7 +5,7 @@ use crate::views::{
     pages::{
         auth_page::AuthPage, create_draw_page::CreateDrawPage, draw_view_page::DrawViewPage,
         home_page::HomePage, how_it_works_page::HowItWorksPage, my_draws_page::MyDrawsPage,
-        shared_teams_page::SharedTeamsPage,
+        santa_reveal_page::SantaRevealPage, shared_teams_page::SharedTeamsPage,
     },
 };
 use leptos::prelude::*;
@@ -58,6 +58,7 @@ pub fn App() -> impl IntoView {
                         <Route path=path!("/creer-un-tirage") view=CreateDrawPage />
                         <Route path=path!("/tirage/:id") view=DrawViewPage />
                         <Route path=path!("/e/:token") view=SharedTeamsPage />
+                        <Route path=path!("/s/:token") view=SantaRevealPage />
                     </Routes>
                 </main>
             </Router>

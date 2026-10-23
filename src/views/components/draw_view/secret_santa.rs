@@ -5,9 +5,9 @@ use leptos::prelude::*;
 
 use crate::server::exclusions::ExclusionDto;
 use crate::server::participants::{ParticipantDto, UpdateParticipantEmail};
-use crate::server::santa_draw::{DrawSanta, SendSantaLinks};
+use crate::server::santa_draw::SendSantaLinks;
 use crate::server::santa_edit::{AddSantaParticipant, RemoveSantaParticipant, UpdateSantaSettings};
-use crate::server::secret_santa_option::SecretSantaOptions;
+use crate::server::secret_santa_option::{format_day, format_euros, SecretSantaOptions};
 use crate::views::colors::Color;
 use crate::views::components::{
     card::Card,
@@ -79,10 +79,10 @@ pub fn SecretSantaDraw(
             <StepCard
                 step
                 title="Prépare ton tirage"
-                action=view! { <LaunchDrawButton draw_id /> }.into_any()
+                action=view! { <LaunchDrawButton /> }.into_any()
             >
                 <p class="text-sm">
-                    "Ajoute ou retire des participants et ajuste les réglages. Quand tout est prêt, lance le tirage : la liste sera alors figée."
+                    "Ajoute ou retire des participants et ajuste les réglages. Quand tout est prêt, lance le tirage : les réglages sont enregistrés et la liste est figée."
                 </p>
             </StepCard>
         }
@@ -174,18 +174,6 @@ fn plural(n: usize, singular: &str, plural: &str) -> String {
     format!("{n} {}", if n > 1 { plural } else { singular })
 }
 
-fn format_euros(cents: i32) -> String {
-    match cents % 100 {
-        0 => format!("{} €", cents / 100),
-        rest => format!("{},{rest:02} €", cents / 100),
-    }
-}
-
-fn format_day(date: NaiveDate) -> String {
-    date.format_localized("%-d %B", chrono::Locale::fr_FR)
-        .to_string()
-}
-
 fn countdown(exchange_date: Option<NaiveDate>) -> String {
     let Some(date) = exchange_date else {
         return "Place à l'échange !".into();
@@ -214,7 +202,8 @@ fn StepCard(
                 <StepPill label="Emails" index=1 current=step as u8 />
                 <StepPill label="Échange" index=2 current=step as u8 />
             </ol>
-            <div class="flex flex-wrap items-end justify-between gap-5">
+            // `contents` : l'erreur rendue par l'island d'action peut prendre toute la largeur.
+            <div class="flex flex-wrap items-end justify-between gap-5 [&>leptos-island]:contents">
                 <div class="flex flex-col gap-3 flex-1 min-w-64">
                     <h3 class="text-2xl">{title}</h3>
                     {children()}
@@ -280,26 +269,23 @@ fn ParticipantsSection(hint: &'static str, children: Children) -> impl IntoView 
     }
 }
 
-#[island]
-fn LaunchDrawButton(draw_id: i32) -> impl IntoView {
-    let draw_santa = ServerAction::<DrawSanta>::new();
-    let server_error = move || draw_santa.value().get().and_then(Result::err);
+/// `id` du formulaire de réglages, que « Lancer le tirage » soumet depuis la carte d'étape.
+const SETTINGS_FORM_ID: &str = "santa-settings";
 
+/// Soumet le formulaire de réglages via l'attribut `form` : un clic enregistre puis tire.
+/// `ActionForm` ajoute le `name`/`value` du bouton cliqué, d'où `launch` côté serveur.
+#[component]
+fn LaunchDrawButton() -> impl IntoView {
     view! {
-        <ActionForm action=draw_santa>
-            <input type="hidden" name="draw_id" value=draw_id />
-            <button
-                type="submit"
-                class="cursor-pointer border rounded-full py-3 px-7 bg-raspberry-500 btn-press-ink"
-                disabled=move || draw_santa.pending().get()
-            >
-                "Lancer le tirage"
-            </button>
-            {move || {
-                server_error()
-                    .map(|e| view! { <p class="mt-2 text-raspberry-500">{e.to_string()}</p> })
-            }}
-        </ActionForm>
+        <button
+            type="submit"
+            form=SETTINGS_FORM_ID
+            name="launch"
+            value="true"
+            class="cursor-pointer border rounded-full py-3 px-7 bg-raspberry-500 btn-press-ink"
+        >
+            "Lancer le tirage"
+        </button>
     }
 }
 
@@ -319,13 +305,26 @@ fn SendLinksButton(draw_id: i32, ready: bool) -> impl IntoView {
                 disabled=move || !ready || send_links.pending().get()
                 title=(!ready).then_some("Renseigne d'abord tous les emails")
             >
-                "Envoyer les liens"
+                {move || {
+                    if send_links.pending().get() { "Envoi en cours…" } else { "Envoyer les liens" }
+                }}
             </button>
-            {move || {
-                server_error()
-                    .map(|e| view! { <p class="mt-2 text-raspberry-500">{e.to_string()}</p> })
-            }}
         </ActionForm>
+        {move || server_error().map(|e| view! { <ActionError message=e.to_string() /> })}
+    }
+}
+
+/// Bandeau d'erreur d'une action d'étape, sur toute la largeur de la carte.
+#[component]
+fn ActionError(message: String) -> impl IntoView {
+    view! {
+        <p
+            role="alert"
+            class="basis-full flex items-start gap-3 px-4 py-3 bg-raspberry-100 border rounded-chip font-bold text-raspberry-700"
+        >
+            <span aria-hidden="true">"⚠"</span>
+            {message}
+        </p>
     }
 }
 
@@ -342,8 +341,17 @@ fn SettingsForm(
     let update_settings = ServerAction::<UpdateSantaSettings>::new();
     let server_error = move || update_settings.value().get().and_then(Result::err);
 
+    // Le tirage peut être lancé depuis la carte d'étape, plus haut :
+    // on amène l'erreur sous les yeux de l'organisateur.
+    let error_ref = NodeRef::<leptos::html::Div>::new();
+    Effect::new(move || {
+        if let (Some(_), Some(el)) = (server_error(), error_ref.get()) {
+            el.scroll_into_view();
+        }
+    });
+
     view! {
-        <ActionForm action=update_settings>
+        <ActionForm action=update_settings attr:id=SETTINGS_FORM_ID>
             <Card bg_color=Color::Surface shadow_color=Color::Blue>
                 <input type="hidden" name="draw_id" value=draw_id />
                 <h3 class="text-2xl mb-4">"Réglages"</h3>
@@ -383,14 +391,11 @@ fn SettingsForm(
                 >
                     "Enregistrer les réglages"
                 </button>
-                {move || {
-                    server_error()
-                        .map(|e| {
-                            view! {
-                                <p class="mt-2 text-raspberry-500 text-center">{e.to_string()}</p>
-                            }
-                        })
-                }}
+                <div node_ref=error_ref class="mt-4 empty:hidden">
+                    {move || {
+                        server_error().map(|e| view! { <ActionError message=e.to_string() /> })
+                    }}
+                </div>
             </Card>
         </ActionForm>
     }

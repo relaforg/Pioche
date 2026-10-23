@@ -107,6 +107,8 @@ pub async fn update_santa_settings(
     #[server(default)] exclusions: Vec<ExclusionDto>,
     budget: Option<f64>,
     date: Option<NaiveDate>,
+    // Présent quand le formulaire est soumis par « Lancer le tirage ».
+    launch: Option<String>,
 ) -> Result<(), AppError> {
     use crate::entities::{exclusions, participants, santa_settings};
     use crate::server::{
@@ -155,6 +157,12 @@ pub async fn update_santa_settings(
         .await?;
 
     txn.commit().await?;
+
+    // Les réglages sont enregistrés même si le tirage échoue ensuite :
+    // l'organisateur corrige à partir de ce qu'il vient de saisir.
+    if launch.is_some() {
+        crate::server::santa_draw::run_draw(&db, draw).await?;
+    }
 
     leptos_axum::redirect(&format!("/tirage/{draw_id}"));
     Ok(())

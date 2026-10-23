@@ -18,6 +18,20 @@ impl SecretSantaOptions {
     }
 }
 
+/// « 25 € », « 12,50 € ». Partagé entre la vue et les emails.
+pub fn format_euros(cents: i32) -> String {
+    match cents % 100 {
+        0 => format!("{} €", cents / 100),
+        rest => format!("{},{rest:02} €", cents / 100),
+    }
+}
+
+/// « 20 décembre ».
+pub fn format_day(date: NaiveDate) -> String {
+    date.format_localized("%-d %B", chrono::Locale::fr_FR)
+        .to_string()
+}
+
 fn parse_budget(budget: f64) -> Result<i32, AppError> {
     if budget <= 0.0 {
         return Err(AppError::Invalid(

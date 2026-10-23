@@ -12,6 +12,7 @@ async fn main() {
     let db = pioche::db::connect(&db_url)
         .await
         .expect("Cannot connect to the database");
+    let mailer = pioche::server::ssr::mail::Mailer::from_env().expect("Invalid SMTP configuration");
 
     let conf = get_configuration(None).unwrap();
     let addr = conf.leptos_options.site_addr;
@@ -27,7 +28,10 @@ async fn main() {
                 use leptos::context::provide_context;
 
                 let db = db.clone();
-                move || provide_context(db.clone())
+                move || {
+                    provide_context(db.clone());
+                    provide_context(mailer.clone());
+                }
             },
             {
                 let leptos_options = leptos_options.clone();

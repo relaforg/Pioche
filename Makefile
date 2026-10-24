@@ -1,5 +1,7 @@
 .PHONY: help db dev prod build-prod down logs ps size nuke \
-	migrate migrate-down migrate-status migrate-new migrate-fresh entities
+	migrate migrate-down migrate-status migrate-new migrate-fresh entities export
+
+VERSION := 1.0.2
 
 ## help       : liste les commandes
 help:
@@ -67,3 +69,7 @@ entities: db
 nuke:
 	@read -p "Supprimer tous les volumes, dont la base de données ? [y/N] " ok && [ "$$ok" = y ]
 	docker compose --profile "*" down -v
+
+export:
+	docker save pioche:1.0.2 | gzip > pioche$(VERSION).tar.gz
+

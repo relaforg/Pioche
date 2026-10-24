@@ -5,6 +5,7 @@ async fn main() {
     use leptos::logging::log;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
+    use migration::MigratorTrait;
     use pioche::{app::*, server::ssr::session::session_middleware};
 
     dotenvy::dotenv().ok();
@@ -12,6 +13,11 @@ async fn main() {
     let db = pioche::db::connect(&db_url)
         .await
         .expect("Cannot connect to the database");
+
+    migration::Migrator::up(&db, None)
+        .await
+        .expect("Cannot perform migration");
+
     let mailer = pioche::server::ssr::mail::Mailer::from_env().expect("Invalid SMTP configuration");
     let public_url =
         pioche::server::ssr::public_url::PublicUrl::from_env().expect("Invalid PUBLIC_URL");

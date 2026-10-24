@@ -31,6 +31,7 @@ lettre = { version = "0.11.23", default-features = false, features = ["builder",
 strum = { version = "0.28", features = ["derive"] }
 web-sys = { version = "0.3", features = ["Clipboard", "Navigator"] }
 governor = { version = "0.10.4", optional = true }
+migration = { path = "migration", optional = true }
 
 [features]
 hydrate = [
@@ -53,7 +54,8 @@ ssr = [
 	"dep:hex",
 	"dep:cookie",
 	"dep:lettre",
-	"dep:governor"
+	"dep:governor",
+	"dep:migration"
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode

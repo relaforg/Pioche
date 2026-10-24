@@ -52,6 +52,7 @@ services:
     profiles: ["prod"]
     container_name: "prod"
     build: { context: ., target: prod }
+    image: pioche:${VERSION}
     depends_on:
       db:
         condition: service_healthy
